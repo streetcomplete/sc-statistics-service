@@ -44,10 +44,8 @@ class ChangesetsWalker
             echo "analyzing " . date("c",$closed_after) . " -> " . date("c",$created_before) . "\n";
             
             $changesets = $this->changesetsFetcher->fetchForUser($user_id, $closed_after, $created_before);
-            // OSM API doesn't know this user: clear and cancel
+            // OSM API doesn't know this user: cancel
             if (!isset($changesets)) {
-                $this->changesetsWalkerStateDao->clearUser($user_id);
-                $this->changesetsDao->clearUser($user_id);
                 return;
             }
             echo "found " . count($changesets) . " changesets." . "\n";

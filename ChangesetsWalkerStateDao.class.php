@@ -35,15 +35,6 @@ class ChangesetsWalkerStateDao
         );
     }
     
-    public function clearUser(int $user_id) {
-        $stmt = $this->mysqli->prepare(
-            'DELETE FROM changesets_walker_state WHERE user_id = ?'
-        );
-        $stmt->bind_param('i', $user_id);
-        $stmt->execute();
-        $stmt->close();
-    }
-    
     public function updateAnalyzingRange(int $user_id, int $newest_date_closed = null, int $oldest_date_created = null, bool $range_is_done)
     {
         $this->mysqli->begin_transaction();

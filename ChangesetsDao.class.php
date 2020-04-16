@@ -118,13 +118,4 @@ class ChangesetsDao
         $stmt->close();
         return $r;
     }
-	
-	public function clearUser(int $user_id) {
-		$stmt = $this->mysqli->prepare(
-            'DELETE FROM changesets WHERE user_id = ?'
-        );
-		$stmt->bind_param('i', $user_id);
-        $stmt->execute();
-        $stmt->close();
-	}
 }
