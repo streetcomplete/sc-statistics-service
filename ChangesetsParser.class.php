@@ -7,6 +7,8 @@ class ChangesetsParser {
     
     public function parse(string $xml): array
     {
+        // disable weird XML features parsing posing a possible security vulnerability #2
+        libxml_disable_entity_loader(true);
         $changesetsXml = simplexml_load_string($xml);
         $r = array();
         foreach ($changesetsXml->changeset as $changesetXml)
