@@ -20,9 +20,9 @@ require_once 'config.php';
 mysqli_report(MYSQLI_REPORT_ERROR | MYSQLI_REPORT_STRICT);
 
 $url = "https://planet.openstreetmap.org/users_deleted/users_deleted.txt";
-$filename = "users_deleted.txt";
+$path = sys_get_temp_dir() . DIRECTORY_SEPARATOR . "users_deleted.txt";
 // step 1: download file into this directory 
-file_put_contents($filename, fopen($url, 'r'));
+file_put_contents($path, fopen($url, 'r'));
 
 // step 2: create temporary table to load the data into
 $mysqli = new mysqli(Config::DB_HOST, Config::DB_USER, Config::DB_PASS, Config::DB_NAME);
@@ -31,9 +31,9 @@ $mysqli->query(
       user_id BIGINT UNSIGNED PRIMARY KEY
     )'
 );
+
 // step 3: load the data directly from file into the database
 // (much faster than programmatic inserts)
-$path = getcwd() . DIRECTORY_SEPARATOR . $filename;
 $mysqli->query(
     "LOAD DATA INFILE '" . addslashes($path) . "' 
       INTO TABLE deleted_user_ids
