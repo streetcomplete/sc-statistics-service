@@ -30,7 +30,8 @@ class ChangesetsWalkerStateDao
                 user_id BIGINT UNSIGNED PRIMARY KEY,
                 finished_analyzing_before_date_closed DATETIME DEFAULT '2017-02-20 00:00:00',
                 newest_date_closed DATETIME,
-                oldest_date_created DATETIME
+                oldest_date_created DATETIME,
+                last_update DATETIME NOT NULL
             )"
         );
     }
@@ -56,7 +57,8 @@ class ChangesetsWalkerStateDao
         $stmt = $this->mysqli->prepare(
             'INSERT INTO changesets_walker_state (user_id, newest_date_closed) VALUES (?,?)
              ON DUPLICATE KEY UPDATE 
-             newest_date_closed = GREATEST(COALESCE(newest_date_closed, ?), ?)'
+             newest_date_closed = GREATEST(COALESCE(newest_date_closed, ?), ?),
+             last_update = UTC_TIMESTAMP'
         );
         $min_date = '1000-01-01 00:00:00'; // MIN MySQL DATETIME
         $date = date('Y-m-d H:i:s', $newest_date_closed);
@@ -70,7 +72,8 @@ class ChangesetsWalkerStateDao
         $stmt = $this->mysqli->prepare(
             'INSERT INTO changesets_walker_state (user_id, oldest_date_created) VALUES (?,?)
              ON DUPLICATE KEY UPDATE 
-             oldest_date_created = LEAST(COALESCE(oldest_date_created, ?), ?)'
+             oldest_date_created = LEAST(COALESCE(oldest_date_created, ?), ?),
+             last_update = UTC_TIMESTAMP'
         );
         $max_date = '9999-12-31 23:59:59'; // MAX MySQL DATETIME
         $date = date('Y-m-d H:i:s', $oldest_date_created);
@@ -86,7 +89,8 @@ class ChangesetsWalkerStateDao
              SET 
               finished_analyzing_before_date_closed = newest_date_closed,
               newest_date_closed = DEFAULT, 
-              oldest_date_created = DEFAULT
+              oldest_date_created = DEFAULT,
+              last_update = UTC_TIMESTAMP
              WHERE user_id = ?'
         );
         $stmt->bind_param('i', $user_id);
@@ -119,7 +123,31 @@ class ChangesetsWalkerStateDao
         return $r;
     }
     
-    public function getLastUpdate(int $user_id): int
+    public function getUserIdWithUnfinishedAnalyzingRange(int $updated_before): ?int
+    {
+		echo $updated_before;
+        $stmt = $this->mysqli->prepare(
+        'SELECT user_id
+          FROM changesets_walker_state
+          WHERE newest_date_closed IS NOT NULL AND last_update < ?
+          ORDER BY last_update ASC
+          LIMIT 1'
+        );
+        $date = date('Y-m-d H:i:s', $updated_before);
+		echo $date;
+        $stmt->bind_param('s', $date);
+        $stmt->execute();
+        $row = $stmt->get_result()->fetch_row();
+        if ($row) {
+            $r = $row[0];
+        } else {
+            $r = null;
+        }
+        $stmt->close();
+        return $r;
+    }
+    
+    public function getFinishedAnalyzingBeforeDateClosed(int $user_id): int
     {
         $stmt = $this->mysqli->prepare(
             'SELECT finished_analyzing_before_date_closed

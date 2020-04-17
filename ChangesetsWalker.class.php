@@ -33,22 +33,21 @@ class ChangesetsWalker
         $this->changesetsWalkerStateDao = new ChangesetsWalkerStateDao($mysqli);
     }
     
-    public function analyzeUser(int $user_id)
+    public function analyzeUser(int $user_id, int $timeout_in_seconds = null)
     {
+        $start_time = time();
         do {
+            if (isset($timeout_in_seconds) && time() - $start_time >= $timeout_in_seconds) break;
+            
             $range = $this->changesetsWalkerStateDao->getCurrentAnalyzingRange($user_id);
             $closed_after = $range[0];
             $created_before = $range[1];
-            
-            // TODO remove echos 
-            echo "analyzing " . date("c",$closed_after) . " -> " . date("c",$created_before) . "\n";
             
             $changesets = $this->changesetsFetcher->fetchForUser($user_id, $closed_after, $created_before);
             // OSM API doesn't know this user: cancel
             if (!isset($changesets)) {
                 return;
             }
-            echo "found " . count($changesets) . " changesets." . "\n";
             // break if no changesets have been found
             if (count($changesets) == 0) break;
             
@@ -85,10 +84,16 @@ class ChangesetsWalker
             $this->changesetsWalkerStateDao->updateAnalyzingRange(
                 $user_id, $newest_closed_date, $oldest_created_date, $range_is_done
             );
-        // TODO additional break condition? F.e. after a certain time has passed etc?
         } while(true);
         
        $this->recheckOpenChangesets($user_id);
+    }
+
+    /** Analyze the changeset history of users whose analyzing process is not finished yet */
+    public function analyzeUnfinished(int $updated_before) {
+        while($user_id = $this->changesetsWalkerStateDao->getUserIdWithUnfinishedAnalyzingRange($updated_before)) {
+            $this->analyzeUser($user_id);
+        }
     }
 
     private function recheckOpenChangesets(int $user_id) {

@@ -1,0 +1,6 @@
+DirectoryIndex get_statistics.html
+Order Allow,Deny
+
+<Files get_statistics.php>
+    Allow from all
+</Files>
