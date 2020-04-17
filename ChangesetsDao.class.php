@@ -98,7 +98,7 @@ class ChangesetsDao
         $result = $stmt->get_result();
         $r = array();
         while ($row = $result->fetch_row()) {
-            $r[$row[0]] = $row[1];
+            $r[$row[0]] = intval($row[1]);
         }
         $stmt->close();
         return $r;
