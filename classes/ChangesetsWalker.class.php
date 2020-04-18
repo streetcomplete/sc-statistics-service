@@ -103,12 +103,7 @@ class ChangesetsWalker
     private function updateChangesetsWithRealNumberOfSolvedQuests(array $changesets)
     {
         foreach ($changesets as $changeset) {
-            $number_of_solved_quests = $this->getSolvedQuestsCountOfChangeset($changeset->id);
-            if (isset($number_of_solved_quests)) {
-                if ($changeset->solved_quest_count != $number_of_solved_quests) {
-                    $changeset->solved_quest_count = $number_of_solved_quests;
-                }
-            }
+            $changeset->solved_quest_count = $this->getSolvedQuestsCountOfChangeset($changeset->id);
         }
     }
 

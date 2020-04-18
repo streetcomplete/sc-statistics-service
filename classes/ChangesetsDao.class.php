@@ -53,11 +53,12 @@ class ChangesetsDao
         $center_lat = $changeset->center_lat ? round(100 * $changeset->center_lat)/100 : null;
         $center_lon = $changeset->center_lon ? round(100 * $changeset->center_lon)/100 : null;
         
+        $solved_quest_count = $changeset->solved_quest_count ?? $changeset->changes_count;
         $stmt->bind_param('iisissssi', 
             $changeset->id,
             $changeset->user_id,
             $changeset->quest_type,
-            $changeset->solved_quest_count,
+            $solved_quest_count,
             $created_at,
             $closed_at,
             $center_lat,

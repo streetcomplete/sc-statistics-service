@@ -5,6 +5,7 @@ class Changeset
 {
     public $id;
     public $user_id;
+    public $changes_count;
     public $solved_quest_count;
     public $created_at;
     public $closed_at;
