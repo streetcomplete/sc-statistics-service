@@ -16,8 +16,6 @@ class ChangesetsDao
 
     private function createTable()
     {
-        /* 2 decimals in lat/lon is about 300-600m inaccuracy. This is more than enough to 
-           calculate the country/state, even close to borders */
         $this->mysqli->query(
             'CREATE TABLE IF NOT EXISTS changesets(
                 changeset_id BIGINT UNSIGNED PRIMARY KEY,
@@ -26,8 +24,7 @@ class ChangesetsDao
                 solved_quest_count INT UNSIGNED NOT NULL,
                 created_at DATETIME NOT NULL,
                 closed_at DATETIME,
-                center_lat DECIMAL(5,2),
-                center_lon DECIMAL(5,2),
+                country_code VARCHAR(6),
                 open BOOLEAN NOT NULL
             )'
         );
@@ -45,24 +42,21 @@ class ChangesetsDao
     private function putChangeset(Changeset $changeset)
     {
         $stmt = $this->mysqli->prepare(
-            'REPLACE INTO changesets(changeset_id, user_id, quest_type, solved_quest_count, created_at, closed_at, center_lat, center_lon, open)
-             VALUES (?,?,?,?,?,?,?,?,?)'
+            'REPLACE INTO changesets(changeset_id, user_id, quest_type, solved_quest_count, created_at, closed_at, country_code, open)
+             VALUES (?,?,?,?,?,?,?,?)'
         );
         $created_at = date('Y-m-d H:i:s', $changeset->created_at);
         $closed_at = $changeset->closed_at ? date('Y-m-d H:i:s', $changeset->closed_at) : null;
-        $center_lat = $changeset->center_lat ? round(100 * $changeset->center_lat)/100 : null;
-        $center_lon = $changeset->center_lon ? round(100 * $changeset->center_lon)/100 : null;
         
         $solved_quest_count = $changeset->solved_quest_count ?? $changeset->changes_count;
-        $stmt->bind_param('iisissssi', 
+        $stmt->bind_param('iisisssi', 
             $changeset->id,
             $changeset->user_id,
             $changeset->quest_type,
             $solved_quest_count,
             $created_at,
             $closed_at,
-            $center_lat,
-            $center_lon,
+            $changeset->country_code,
             $changeset->open,
         );
         $stmt->execute();
