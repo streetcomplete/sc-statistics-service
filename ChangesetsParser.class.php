@@ -24,7 +24,7 @@ class ChangesetsParser {
         $r = new Changeset();
         $r->id = intval((string) $changeset->attributes()['id']);
         $r->user_id = intval((string) $changeset->attributes()['uid']);
-        $r->changes_count = intval((string) $changeset->attributes()['changes_count']);
+        $r->solved_quest_count = intval((string) $changeset->attributes()['changes_count']);
         $r->created_at = strtotime((string) $changeset->attributes()['created_at']);
         $closed_at = (string) $changeset->attributes()['closed_at'];
         if ($closed_at) $r->closed_at = strtotime($closed_at);

@@ -23,7 +23,7 @@ class ChangesetsDao
                 changeset_id BIGINT UNSIGNED PRIMARY KEY,
                 user_id BIGINT UNSIGNED NOT NULL,
                 quest_type VARCHAR(256) NOT NULL,
-                changes_count INT UNSIGNED NOT NULL,
+                solved_quest_count INT UNSIGNED NOT NULL,
                 created_at DATETIME NOT NULL,
                 closed_at DATETIME,
                 center_lat DECIMAL(5,2),
@@ -45,7 +45,7 @@ class ChangesetsDao
     private function putChangeset(Changeset $changeset)
     {
         $stmt = $this->mysqli->prepare(
-            'REPLACE INTO changesets(changeset_id, user_id, quest_type, changes_count, created_at, closed_at, center_lat, center_lon, open)
+            'REPLACE INTO changesets(changeset_id, user_id, quest_type, solved_quest_count, created_at, closed_at, center_lat, center_lon, open)
              VALUES (?,?,?,?,?,?,?,?,?)'
         );
         $created_at = date('Y-m-d H:i:s', $changeset->created_at);
@@ -57,7 +57,7 @@ class ChangesetsDao
             $changeset->id,
             $changeset->user_id,
             $changeset->quest_type,
-            $changeset->changes_count,
+            $changeset->solved_quest_count,
             $created_at,
             $closed_at,
             $center_lat,
@@ -88,7 +88,7 @@ class ChangesetsDao
     public function getQuestCounts(int $user_id): array
     {
         $stmt = $this->mysqli->prepare(
-            'SELECT quest_type, SUM(changes_count)
+            'SELECT quest_type, SUM(solved_quest_count)
               FROM changesets
               WHERE user_id = ?
               GROUP BY quest_type'

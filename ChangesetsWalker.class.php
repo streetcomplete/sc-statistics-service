@@ -3,6 +3,7 @@
 require_once 'ChangesetsWalkerStateDao.class.php';
 require_once 'ChangesetsDao.class.php';
 require_once 'ChangesetsFetcher.class.php';
+require_once 'ChangesetModifiedElementsFetcher.class.php';
 
 /** Walks through a user's changeset history to find the relevant information for StreetComplete
  *  statistics.
@@ -22,6 +23,7 @@ require_once 'ChangesetsFetcher.class.php';
 class ChangesetsWalker
 {
     private $changesetsFetcher;
+    private $changesetModifiedElementsFetcher;
     private $changesetsDao;
     private $changesetsWalkerStateDao;
     
@@ -29,6 +31,7 @@ class ChangesetsWalker
     {
         $this->mysqli = $mysqli;
         $this->changesetsFetcher = new ChangesetsFetcher($osm_user, $osm_pass);
+        $this->changesetModifiedElementsFetcher = new ChangesetModifiedElementsFetcher($osm_user, $osm_pass);
         $this->changesetsDao = new ChangesetsDao($mysqli);
         $this->changesetsWalkerStateDao = new ChangesetsWalkerStateDao($mysqli);
     }
@@ -71,6 +74,7 @@ class ChangesetsWalker
             }
             
             if (!empty($sc_changesets)) {
+                $this->updateChangesetsWithRealNumberOfSolvedQuests($sc_changesets);
                 $this->changesetsDao->putChangesets($sc_changesets);
             }
             
@@ -94,6 +98,53 @@ class ChangesetsWalker
         while($user_id = $this->changesetsWalkerStateDao->getUserIdWithUnfinishedAnalyzingRange($updated_before)) {
             $this->analyzeUser($user_id);
         }
+    }
+
+    private function updateChangesetsWithRealNumberOfSolvedQuests(array $changesets)
+    {
+        foreach ($changesets as $changeset) {
+            $number_of_solved_quests = $this->getSolvedQuestsCountOfChangeset($changeset->id);
+            if (isset($number_of_solved_quests)) {
+                if ($changeset->changes_count != $number_of_solved_quests) {
+                    $changeset->changes_count = $number_of_solved_quests;
+                }
+            }
+        }
+    }
+
+    private function getSolvedQuestsCountOfChangeset(int $changeset_id): ?int
+    {
+            /* the changes_count attribute of the changeset is not always equal to the actual
+             * solved quest count. It deviates for the following cases:
+             * 1. changes were reverted. Each revert counts as an additional change towards changes_count
+             * 2. a way was split. A split may create new nodes at the split positions and creates new
+             *    way(s).
+             */
+            // So, firstly, we only count MODIFIED elements.
+            $elements = $this->changesetModifiedElementsFetcher->fetch($changeset_id);
+            if (!isset($elements)) return null;
+            // Secondly, we look for elements that have been changed multiple times in the changeset.
+            return
+                $this->getSolvedQuestsCount($elements["nodes"]) +
+                $this->getSolvedQuestsCount($elements["ways"]) +
+                $this->getSolvedQuestsCount($elements["relations"]);
+    }
+
+    /** returns number of changed element ids, subtracting any reverts */
+    private function getSolvedQuestsCount(array $element_ids_in_changeset): int
+    {
+        $counts = array_count_values($element_ids_in_changeset);
+        $result = 0;
+        foreach ($counts as $id => $count) {
+            /* if an element id has been changed several times in the changeset, we can assume
+               that every other time was a revert. So changed 1 time: +1 change. Changed 
+               2 times: +1 change and then revert. Changed 3 times: +1 change, then revert,
+               then change again. In other words, if the id occurs an odd number of times 
+               in the changeset, it counts as +1, otherwise +0 */
+            $is_odd = $count % 2 != 0;
+            if ($is_odd) $result++;
+        }
+        return $result;
     }
 
     private function recheckOpenChangesets(int $user_id) {
