@@ -9,8 +9,10 @@ class Changeset
     public $solved_quest_count; 
     public $created_at;
     public $closed_at;
-    public $center_lat;
-    public $center_lon;
+    public $min_lat;
+    public $max_lat;
+    public $min_lon;
+    public $max_lon;
     public $country_code;
     public $open;
     public $quest_type;

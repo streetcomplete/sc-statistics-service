@@ -107,7 +107,16 @@ class ChangesetsWalker
     {
         foreach ($changesets as $changeset) {
             $changeset->solved_quest_count = $this->getSolvedQuestsCountOfChangeset($changeset->id);
-            $changeset->country_code = $this->getCountryCode($changeset->center_lon, $changeset->center_lat);
+
+            $center_lat = ($changeset->min_lat + $changeset->max_lat) / 2;
+            $center_lon;
+            // for the jokers that cross the 180th meridian within one changeset
+            if (sign($changeset->max_lon) != sign($changeset->min_lon)) {
+                $center_lon = $changeset->max_lon;
+            } else {
+                $center_lon = ($changeset->min_lon + $changeset->max_lon) / 2;
+            }
+            $changeset->country_code = $this->getCountryCode($center_lon, $center_lat);
         }
     }
 
@@ -162,4 +171,9 @@ class ChangesetsWalker
             }
         }
     }
+}
+
+function sign($val)
+{
+    return $val != 0 ? $val/abs($val) : 0;
 }

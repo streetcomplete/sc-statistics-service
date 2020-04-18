@@ -28,19 +28,10 @@ class ChangesetsParser {
         $r->created_at = strtotime((string) $changeset->attributes()['created_at']);
         $closed_at = (string) $changeset->attributes()['closed_at'];
         if ($closed_at) $r->closed_at = strtotime($closed_at);
-        $max_lat = doubleval((string) $changeset->attributes()['max_lat']);
-        $min_lat = doubleval((string) $changeset->attributes()['min_lat']);
-        $max_lon = doubleval((string) $changeset->attributes()['max_lon']);
-        $min_lon = doubleval((string) $changeset->attributes()['max_lon']);
-        if ($max_lat && $min_lat && $max_lon && $min_lon) {
-            $r->center_lat = ($min_lat + $max_lat) / 2;
-            // for the jokers that cross the 180th meridian within one changeset
-            if ($this->sign($max_lon) != $this->sign($min_lon)) {
-                $r->center_lon = $max_lon;
-            } else {
-                $r->center_lon = ($min_lon + $max_lon) / 2;
-            }
-        }
+        $r->max_lat = doubleval((string) $changeset->attributes()['max_lat']);
+        $r->min_lat = doubleval((string) $changeset->attributes()['min_lat']);
+        $r->max_lon = doubleval((string) $changeset->attributes()['max_lon']);
+        $r->min_lon = doubleval((string) $changeset->attributes()['max_lon']);
         $r->open = filter_var((string) $changeset->attributes()['open'], FILTER_VALIDATE_BOOLEAN);
         foreach ($changeset->tag as $tag)
         {
@@ -50,10 +41,5 @@ class ChangesetsParser {
             }
         }
         return $r;
-    }
-    
-    private function sign($val)
-    {
-        return $val != 0 ? $val/abs($val) : 0;
     }
 }
