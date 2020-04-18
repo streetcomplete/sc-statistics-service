@@ -125,7 +125,6 @@ class ChangesetsWalkerStateDao
     
     public function getUserIdWithUnfinishedAnalyzingRange(int $updated_before): ?int
     {
-		echo $updated_before;
         $stmt = $this->mysqli->prepare(
         'SELECT user_id
           FROM changesets_walker_state
@@ -134,7 +133,6 @@ class ChangesetsWalkerStateDao
           LIMIT 1'
         );
         $date = date('Y-m-d H:i:s', $updated_before);
-		echo $date;
         $stmt->bind_param('s', $date);
         $stmt->execute();
         $row = $stmt->get_result()->fetch_row();
