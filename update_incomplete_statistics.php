@@ -12,7 +12,7 @@ if (php_sapi_name() !== 'cli') {
 }
 
 require_once 'config.php';
-require_once 'ChangesetsWalker.class.php';
+require_once 'classes/ChangesetsWalker.class.php';
 
 mysqli_report(MYSQLI_REPORT_ERROR | MYSQLI_REPORT_STRICT);
 // all calculations must be done in UTC!

@@ -1,8 +1,8 @@
 <?php
 require_once 'config.php';
-require_once 'ChangesetsWalker.class.php';
-require_once 'ChangesetsDao.class.php';
-require_once 'ChangesetsWalkerStateDao.class.php';
+require_once 'classes/ChangesetsWalker.class.php';
+require_once 'classes/ChangesetsDao.class.php';
+require_once 'classes/ChangesetsWalkerStateDao.class.php';
 
 mysqli_report(MYSQLI_REPORT_ERROR | MYSQLI_REPORT_STRICT);
 // all calculations must be done in UTC!

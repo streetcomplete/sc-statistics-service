@@ -105,8 +105,8 @@ class ChangesetsWalker
         foreach ($changesets as $changeset) {
             $number_of_solved_quests = $this->getSolvedQuestsCountOfChangeset($changeset->id);
             if (isset($number_of_solved_quests)) {
-                if ($changeset->changes_count != $number_of_solved_quests) {
-                    $changeset->changes_count = $number_of_solved_quests;
+                if ($changeset->solved_quest_count != $number_of_solved_quests) {
+                    $changeset->solved_quest_count = $number_of_solved_quests;
                 }
             }
         }
