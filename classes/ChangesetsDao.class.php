@@ -80,7 +80,7 @@ class ChangesetsDao
     }
     
     /** Returns associative array of quest_type -> solved count */
-    public function getQuestCounts(int $user_id): array
+    public function getSolvedQuestCounts(int $user_id): array
     {
         $stmt = $this->mysqli->prepare(
             'SELECT quest_type, SUM(solved_quest_count)
@@ -98,7 +98,27 @@ class ChangesetsDao
         $stmt->close();
         return $r;
     }
-    
+
+    /** Returns associative array of country iso code -> solved count */
+    public function getSolvedQuestsByCountry(int $user_id): array
+    {
+        $stmt = $this->mysqli->prepare(
+            'SELECT country_code, SUM(solved_quest_count)
+              FROM changesets
+              WHERE user_id = ?
+              GROUP BY country_code'
+        );
+        $stmt->bind_param('i', $user_id);
+        $stmt->execute();
+        $result = $stmt->get_result();
+        $r = array();
+        while ($row = $result->fetch_row()) {
+            $r[$row[0]] = intval($row[1]);
+        }
+        $stmt->close();
+        return $r;
+    }
+
     /** Returns the number of days the user created changesets */
     public function getDaysActive(int $user_id): int
     {

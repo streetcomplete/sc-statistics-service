@@ -29,7 +29,8 @@ try {
     $changesets_dao = new ChangesetsDao($mysqli);
     $changesets_walker_state_dao = new ChangesetsWalkerStateDao($mysqli);
 
-    $solved_quest_types = $changesets_dao->getQuestCounts($user_id);
+    $solved_quest_types = $changesets_dao->getSolvedQuestCounts($user_id);
+    $solved_by_country = $changesets_dao->getSolvedQuestsByCountry($user_id);
     $days_active = $changesets_dao->getDaysActive($user_id);
     $last_update = $changesets_walker_state_dao->getFinishedAnalyzingBeforeDateClosed($user_id);
 
@@ -41,6 +42,7 @@ try {
 http_response_code(200);
 exit(json_encode(array(
     'questTypes' => $solved_quest_types,
+    'countries' => $solved_by_country,
     'daysActive' => $days_active,
     'lastUpdate' => date('c', $last_update)
 )));
