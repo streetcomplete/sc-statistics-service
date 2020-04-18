@@ -4,6 +4,7 @@ require_once 'ChangesetsWalkerStateDao.class.php';
 require_once 'ChangesetsDao.class.php';
 require_once 'ChangesetsFetcher.class.php';
 require_once 'ChangesetModifiedElementsFetcher.class.php';
+require_once 'ReverseCountryGeocoder.class.php';
 
 /** Walks through a user's changeset history to find the relevant information for StreetComplete
  *  statistics.
@@ -26,14 +27,16 @@ class ChangesetsWalker
     private $changesetModifiedElementsFetcher;
     private $changesetsDao;
     private $changesetsWalkerStateDao;
+    private $geocoder;
     
-    public function __construct(mysqli $mysqli, string $osm_user = null, string $osm_pass = null)
+    public function __construct(mysqli $mysqli, string $db_name, string $osm_user = null, string $osm_pass = null)
     {
         $this->mysqli = $mysqli;
         $this->changesetsFetcher = new ChangesetsFetcher($osm_user, $osm_pass);
         $this->changesetModifiedElementsFetcher = new ChangesetModifiedElementsFetcher($osm_user, $osm_pass);
         $this->changesetsDao = new ChangesetsDao($mysqli);
         $this->changesetsWalkerStateDao = new ChangesetsWalkerStateDao($mysqli);
+        $this->geocoder = new ReverseCountryGeocoder($mysqli, $db_name, 'data'.DIRECTORY_SEPARATOR.'boundaries.json');
     }
     
     public function analyzeUser(int $user_id, int $timeout_in_seconds = null)
@@ -74,7 +77,7 @@ class ChangesetsWalker
             }
             
             if (!empty($sc_changesets)) {
-                $this->updateChangesetsWithRealNumberOfSolvedQuests($sc_changesets);
+                $this->addDataToChangesets($sc_changesets);
                 $this->changesetsDao->putChangesets($sc_changesets);
             }
             
@@ -100,10 +103,11 @@ class ChangesetsWalker
         }
     }
 
-    private function updateChangesetsWithRealNumberOfSolvedQuests(array $changesets)
+    private function addDataToChangesets(array $changesets)
     {
         foreach ($changesets as $changeset) {
             $changeset->solved_quest_count = $this->getSolvedQuestsCountOfChangeset($changeset->id);
+            $changeset->country_code = $this->getCountryCode($changeset->center_lon, $changeset->center_lat);
         }
     }
 
@@ -141,12 +145,19 @@ class ChangesetsWalker
         }
         return $result;
     }
+    
+    private function getCountryCode($longitude, $latitude): ?string
+    {
+        $codes = $this->geocoder->getIsoCodes($longitude, $latitude);
+        return empty($codes) ? null : $codes[0];
+    }
 
     private function recheckOpenChangesets(int $user_id) {
         $open_changesets_ids = $this->changesetsDao->getOpenChangesetIds($user_id);
         if (!empty($open_changesets_ids)) {
             $previously_open_changesets = $this->changesetsFetcher->fetchByIds($open_changesets_ids);
             if (!empty($previously_open_changesets)) {
+                $this->addDataToChangesets($previously_open_changesets);
                 $this->changesetsDao->putChangesets($previously_open_changesets);
             }
         }

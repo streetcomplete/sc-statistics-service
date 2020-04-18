@@ -6,11 +6,12 @@ class Changeset
     public $id;
     public $user_id;
     public $changes_count;
-    public $solved_quest_count;
+    public $solved_quest_count; 
     public $created_at;
     public $closed_at;
     public $center_lat;
     public $center_lon;
+    public $country_code;
     public $open;
     public $quest_type;
 }

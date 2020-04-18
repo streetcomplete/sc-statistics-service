@@ -23,7 +23,7 @@ if (!is_int($user_id)) {
 try {
 
     $mysqli = new mysqli(Config::DB_HOST, Config::DB_USER, Config::DB_PASS, Config::DB_NAME);
-    $changesets_walker = new ChangesetsWalker($mysqli, Config::OSM_API_USER, Config::OSM_API_PASS);
+    $changesets_walker = new ChangesetsWalker($mysqli, Config::DB_NAME, Config::OSM_API_USER, Config::OSM_API_PASS);
     $changesets_walker->analyzeUser($user_id, Config::MAX_CHANGESET_ANALYZING_IN_SECONDS);
 
     $changesets_dao = new ChangesetsDao($mysqli);
