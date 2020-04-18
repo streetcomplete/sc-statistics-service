@@ -33,7 +33,7 @@ class ReverseCountryGeocoder
         while ($row = $result->fetch_row()) {
             $iso = $row[0];
             // skip non-countries
-            if ($iso == "EU") continue;
+            if ($iso == "EU" || $iso == "FX") continue;
             $r[] = $iso;
         }
         $stmt->close();
