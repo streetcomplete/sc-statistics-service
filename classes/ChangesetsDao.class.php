@@ -19,13 +19,14 @@ class ChangesetsDao
         $this->mysqli->query(
             'CREATE TABLE IF NOT EXISTS changesets(
                 changeset_id BIGINT UNSIGNED PRIMARY KEY,
-                user_id BIGINT UNSIGNED NOT NULL KEY,
+                user_id BIGINT UNSIGNED NOT NULL,
                 quest_type VARCHAR(256) NOT NULL,
                 solved_quest_count INT UNSIGNED NOT NULL,
                 created_at DATETIME NOT NULL,
                 closed_at DATETIME,
                 country_code VARCHAR(6),
-                open BOOLEAN NOT NULL
+                open BOOLEAN NOT NULL,
+                KEY (user_id)
             )'
         );
     }
