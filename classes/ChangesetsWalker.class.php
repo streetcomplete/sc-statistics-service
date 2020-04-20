@@ -122,20 +122,20 @@ class ChangesetsWalker
 
     private function getSolvedQuestsCountOfChangeset(int $changeset_id): ?int
     {
-            /* the changes_count attribute of the changeset is not always equal to the actual
-             * solved quest count. It deviates for the following cases:
-             * 1. changes were reverted. Each revert counts as an additional change towards changes_count
-             * 2. a way was split. A split may create new nodes at the split positions and creates new
-             *    way(s).
-             */
-            // So, firstly, we only count MODIFIED elements.
-            $elements = $this->changesetModifiedElementsFetcher->fetch($changeset_id);
-            if (!isset($elements)) return null;
-            // Secondly, we look for elements that have been changed multiple times in the changeset.
-            return
-                $this->getSolvedQuestsCount($elements["nodes"]) +
-                $this->getSolvedQuestsCount($elements["ways"]) +
-                $this->getSolvedQuestsCount($elements["relations"]);
+        /* the changes_count attribute of the changeset is not always equal to the actual
+        * solved quest count. It deviates for the following cases:
+        * 1. changes were reverted. Each revert counts as an additional change towards changes_count
+        * 2. a way was split. A split may create new nodes at the split positions and creates new
+        *    way(s).
+        */
+        // So, firstly, we only count MODIFIED elements.
+        $elements = $this->changesetModifiedElementsFetcher->fetch($changeset_id);
+        if (!isset($elements)) return null;
+        // Secondly, we look for elements that have been changed multiple times in the changeset.
+        return
+            $this->getSolvedQuestsCount($elements["nodes"]) +
+            $this->getSolvedQuestsCount($elements["ways"]) +
+            $this->getSolvedQuestsCount($elements["relations"]);
     }
 
     /** returns number of changed element ids, subtracting any reverts */
