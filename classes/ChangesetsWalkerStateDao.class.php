@@ -36,7 +36,7 @@ class ChangesetsWalkerStateDao
         );
     }
     
-    public function updateAnalyzingRange(int $user_id, int $newest_date_closed = null, int $oldest_date_created = null, bool $range_is_done = false)
+    public function update(int $user_id, int $newest_date_closed = null, int $oldest_date_created = null, bool $range_is_done = false)
     {
         $this->mysqli->begin_transaction();
         

@@ -47,12 +47,12 @@ class ChangesetsWalker
             $created_before = $range[1];
             
             $changesets = $this->changesetsFetcher->fetchForUser($user_id, $closed_after, $created_before);
-            // OSM API doesn't know this user: cancel
-            if (!isset($changesets)) {
-                return;
+            // OSM API doesn't know this user or no changesets have been found
+            if (!isset($changesets) || count($changesets) == 0) {
+                // we still want to record the last update date
+                $this->changesetsWalkerStateDao->update($user_id);
+                break;
             }
-            // break if no changesets have been found
-            if (count($changesets) == 0) break;
             
             $sc_changesets = array(); // only SC changesets that are relevant for StreetComplete stats
             $oldest_created_date = NULL;
@@ -81,11 +81,15 @@ class ChangesetsWalker
             /* break condition: The closed date of the newest changeset in the fetch result is 
                equal to the date before which the user's changeset history has been analyzed 
                already and this is the first call to fetch the changesets for a range */
-            if ($newest_closed_date == $closed_after && !isset($created_before)) break;
+            if ($newest_closed_date == $closed_after && !isset($created_before)) {
+                // we still want to record the last update date
+                $this->changesetsWalkerStateDao->update($user_id);
+                break;
+            }
             
             // OSM API always returns 100 unless there are no more -> we reached the end
             $range_is_done = count($changesets) < 100;
-            $this->changesetsWalkerStateDao->updateAnalyzingRange(
+            $this->changesetsWalkerStateDao->update(
                 $user_id, $newest_closed_date, $oldest_created_date, $range_is_done
             );
         } while(true);
