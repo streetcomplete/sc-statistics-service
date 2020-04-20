@@ -36,7 +36,7 @@ class ChangesetsWalkerStateDao
         );
     }
     
-    public function updateAnalyzingRange(int $user_id, int $newest_date_closed = null, int $oldest_date_created = null, bool $range_is_done)
+    public function updateAnalyzingRange(int $user_id, int $newest_date_closed = null, int $oldest_date_created = null, bool $range_is_done = false)
     {
         $this->mysqli->begin_transaction();
         
@@ -49,6 +49,7 @@ class ChangesetsWalkerStateDao
         if ($range_is_done) {
             $this->setAnalyzingRangeDone($user_id);
         }
+        $this->updateLastUpdateDate();
         $this->mysqli->commit();
     }
     
@@ -57,8 +58,7 @@ class ChangesetsWalkerStateDao
         $stmt = $this->mysqli->prepare(
             'INSERT INTO changesets_walker_state (user_id, newest_date_closed) VALUES (?,?)
              ON DUPLICATE KEY UPDATE 
-             newest_date_closed = GREATEST(COALESCE(newest_date_closed, ?), ?),
-             last_update = UTC_TIMESTAMP'
+             newest_date_closed = GREATEST(COALESCE(newest_date_closed, ?), ?)'
         );
         $min_date = '1000-01-01 00:00:00'; // MIN MySQL DATETIME
         $date = date('Y-m-d H:i:s', $newest_date_closed);
@@ -72,8 +72,7 @@ class ChangesetsWalkerStateDao
         $stmt = $this->mysqli->prepare(
             'INSERT INTO changesets_walker_state (user_id, oldest_date_created) VALUES (?,?)
              ON DUPLICATE KEY UPDATE 
-             oldest_date_created = LEAST(COALESCE(oldest_date_created, ?), ?),
-             last_update = UTC_TIMESTAMP'
+             oldest_date_created = LEAST(COALESCE(oldest_date_created, ?), ?)'
         );
         $max_date = '9999-12-31 23:59:59'; // MAX MySQL DATETIME
         $date = date('Y-m-d H:i:s', $oldest_date_created);
@@ -89,14 +88,21 @@ class ChangesetsWalkerStateDao
              SET 
               finished_analyzing_before_date_closed = newest_date_closed,
               newest_date_closed = DEFAULT, 
-              oldest_date_created = DEFAULT,
-              last_update = UTC_TIMESTAMP
+              oldest_date_created = DEFAULT
              WHERE user_id = ?'
         );
         $stmt->bind_param('i', $user_id);
         $stmt->execute();
         $stmt->close();
     }
+
+	private function updateLastUpdateDate()
+	{
+		// unfortunately it is not possible to create the column last_update in the table with
+		// the modifier "DEFAULT UTC_TIMESTAMP ON UPDATE UTC_TIMESTAMP" (=auto-update timestamp
+		// on every update). Se we need to do it manually.
+		$this->mysqli->query('UPDATE changesets_walker_state SET last_update = UTC_TIMESTAMP');
+	}
 
     public function getCurrentAnalyzingRange(int $user_id): array
     {
