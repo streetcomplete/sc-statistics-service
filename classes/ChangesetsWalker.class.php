@@ -3,8 +3,8 @@
 require_once 'ChangesetsWalkerStateDao.class.php';
 require_once 'ChangesetsDao.class.php';
 require_once 'ChangesetsFetcher.class.php';
-require_once 'ChangesetModifiedElementsFetcher.class.php';
-require_once 'ReverseCountryGeocoder.class.php';
+require_once 'ChangesetAnalyzer.class.php';
+
 
 /** Walks through a user's changeset history to find the relevant information for StreetComplete
  *  statistics.
@@ -24,19 +24,17 @@ require_once 'ReverseCountryGeocoder.class.php';
 class ChangesetsWalker
 {
     private $changesetsFetcher;
-    private $changesetModifiedElementsFetcher;
     private $changesetsDao;
     private $changesetsWalkerStateDao;
-    private $geocoder;
+    private $changesetAnalyzer;
     
     public function __construct(mysqli $mysqli, string $db_name, string $osm_user = null, string $osm_pass = null)
     {
         $this->mysqli = $mysqli;
         $this->changesetsFetcher = new ChangesetsFetcher($osm_user, $osm_pass);
-        $this->changesetModifiedElementsFetcher = new ChangesetModifiedElementsFetcher($osm_user, $osm_pass);
         $this->changesetsDao = new ChangesetsDao($mysqli);
         $this->changesetsWalkerStateDao = new ChangesetsWalkerStateDao($mysqli);
-        $this->geocoder = new ReverseCountryGeocoder($mysqli, $db_name, 'data'.DIRECTORY_SEPARATOR.'boundaries.json');
+        $this->changesetAnalyzer = new ChangesetAnalyzer($mysqli, $db_name, $osm_user, $osm_pass);
     }
     
     public function analyzeUser(int $user_id, int $timeout_in_seconds = null)
@@ -77,7 +75,7 @@ class ChangesetsWalker
             }
             
             if (!empty($sc_changesets)) {
-                $this->addDataToChangesets($sc_changesets);
+                $this->analyzeChangesets($sc_changesets);
                 $this->changesetsDao->putChangesets($sc_changesets);
             }
             
@@ -103,62 +101,11 @@ class ChangesetsWalker
         }
     }
 
-    private function addDataToChangesets(array $changesets)
+    private function analyzeChangesets(array $changesets)
     {
         foreach ($changesets as $changeset) {
-            $changeset->solved_quest_count = $this->getSolvedQuestsCountOfChangeset($changeset->id);
-
-            $center_lat = ($changeset->min_lat + $changeset->max_lat) / 2;
-            $center_lon;
-            // for the jokers that cross the 180th meridian within one changeset
-            if (sign($changeset->max_lon) != sign($changeset->min_lon)) {
-                $center_lon = $changeset->max_lon;
-            } else {
-                $center_lon = ($changeset->min_lon + $changeset->max_lon) / 2;
-            }
-            $changeset->country_code = $this->getCountryCode($center_lon, $center_lat);
+            $this->changesetAnalyzer->analyze($changeset);
         }
-    }
-
-    private function getSolvedQuestsCountOfChangeset(int $changeset_id): ?int
-    {
-        /* the changes_count attribute of the changeset is not always equal to the actual
-        * solved quest count. It deviates for the following cases:
-        * 1. changes were reverted. Each revert counts as an additional change towards changes_count
-        * 2. a way was split. A split may create new nodes at the split positions and creates new
-        *    way(s).
-        */
-        // So, firstly, we only count MODIFIED elements.
-        $elements = $this->changesetModifiedElementsFetcher->fetch($changeset_id);
-        if (!isset($elements)) return null;
-        // Secondly, we look for elements that have been changed multiple times in the changeset.
-        return
-            $this->getSolvedQuestsCount($elements["nodes"]) +
-            $this->getSolvedQuestsCount($elements["ways"]) +
-            $this->getSolvedQuestsCount($elements["relations"]);
-    }
-
-    /** returns number of changed element ids, subtracting any reverts */
-    private function getSolvedQuestsCount(array $element_ids_in_changeset): int
-    {
-        $counts = array_count_values($element_ids_in_changeset);
-        $result = 0;
-        foreach ($counts as $id => $count) {
-            /* if an element id has been changed several times in the changeset, we can assume
-               that every other time was a revert. So changed 1 time: +1 change. Changed 
-               2 times: +1 change and then revert. Changed 3 times: +1 change, then revert,
-               then change again. In other words, if the id occurs an odd number of times 
-               in the changeset, it counts as +1, otherwise +0 */
-            $is_odd = $count % 2 != 0;
-            if ($is_odd) $result++;
-        }
-        return $result;
-    }
-    
-    private function getCountryCode($longitude, $latitude): ?string
-    {
-        $codes = $this->geocoder->getIsoCodes($longitude, $latitude);
-        return empty($codes) ? null : $codes[0];
     }
 
     private function recheckOpenChangesets(int $user_id) {
@@ -166,14 +113,9 @@ class ChangesetsWalker
         if (!empty($open_changesets_ids)) {
             $previously_open_changesets = $this->changesetsFetcher->fetchByIds($open_changesets_ids);
             if (!empty($previously_open_changesets)) {
-                $this->addDataToChangesets($previously_open_changesets);
+                $this->analyzeChangesets($previously_open_changesets);
                 $this->changesetsDao->putChangesets($previously_open_changesets);
             }
         }
     }
-}
-
-function sign($val)
-{
-    return $val != 0 ? $val/abs($val) : 0;
 }
