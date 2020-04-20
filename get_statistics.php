@@ -10,7 +10,9 @@ date_default_timezone_set('UTC');
 
 header('Content-Type: application/json');
 
-// TODO only allow with user agent StreetComplete
+if (!startsWith($_SERVER['HTTP_USER_AGENT'], "StreetComplete")) {
+    returnError(403, 'This is not a public API');
+}
 
 if (!isset($_GET['user_id'])) {
     returnError(400, 'Missing user_id parameter');
@@ -54,4 +56,10 @@ function returnError($code, $message)
 {
     http_response_code($code);
     exit(json_encode(array('error' => $message)));
+}
+
+function startsWith($haystack, $needle): bool
+{
+     $length = strlen($needle);
+     return (substr($haystack, 0, $length) === $needle);
 }
