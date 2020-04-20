@@ -49,7 +49,7 @@ class ChangesetsWalkerStateDao
         if ($range_is_done) {
             $this->setAnalyzingRangeDone($user_id);
         }
-        $this->updateLastUpdateDate();
+        $this->updateLastUpdateDate($user_id);
         $this->mysqli->commit();
     }
     
@@ -96,12 +96,18 @@ class ChangesetsWalkerStateDao
         $stmt->close();
     }
 
-	private function updateLastUpdateDate()
+	private function updateLastUpdateDate(int $user_id)
 	{
 		// unfortunately it is not possible to create the column last_update in the table with
 		// the modifier "DEFAULT UTC_TIMESTAMP ON UPDATE UTC_TIMESTAMP" (=auto-update timestamp
 		// on every update). Se we need to do it manually.
-		$this->mysqli->query('UPDATE changesets_walker_state SET last_update = UTC_TIMESTAMP');
+		$stmt = $this->mysqli->prepare(
+			'UPDATE changesets_walker_state
+			 SET last_update = UTC_TIMESTAMP
+			 WHERE user_id = ?');
+		$stmt->bind_param('i', $user_id);
+        $stmt->execute();
+        $stmt->close();
 	}
 
     public function getCurrentAnalyzingRange(int $user_id): array
