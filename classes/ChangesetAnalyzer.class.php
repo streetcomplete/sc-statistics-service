@@ -14,7 +14,6 @@ class ChangesetAnalyzer {
     
     public function __construct(mysqli $mysqli, string $db_name, string $osm_user = null, string $osm_pass = null)
     {
-        $this->mysqli = $mysqli;
         $this->changesetModifiedElementsFetcher = new ChangesetModifiedElementsFetcher($osm_user, $osm_pass);
         $this->geocoder = new ReverseCountryGeocoder($mysqli, $db_name, 'data'.DIRECTORY_SEPARATOR.'boundaries.json');
     }

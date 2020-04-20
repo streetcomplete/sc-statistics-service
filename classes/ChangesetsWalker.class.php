@@ -30,7 +30,6 @@ class ChangesetsWalker
     
     public function __construct(mysqli $mysqli, string $db_name, string $osm_user = null, string $osm_pass = null)
     {
-        $this->mysqli = $mysqli;
         $this->changesetsFetcher = new ChangesetsFetcher($osm_user, $osm_pass);
         $this->changesetsDao = new ChangesetsDao($mysqli);
         $this->changesetsWalkerStateDao = new ChangesetsWalkerStateDao($mysqli);
