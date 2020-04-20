@@ -24,7 +24,10 @@ try {
 
     $mysqli = new mysqli(Config::DB_HOST, Config::DB_USER, Config::DB_PASS, Config::DB_NAME);
     $changesets_walker = new ChangesetsWalker($mysqli, Config::DB_NAME, Config::OSM_API_USER, Config::OSM_API_PASS);
-    $changesets_walker->analyzeUser($user_id, Config::MAX_CHANGESET_ANALYZING_IN_SECONDS);
+    $last_update_date = $changesets_walker->getLastUpdateDate($user_id);
+    if (time() >= $last_update_date + Config::MIN_DELAY_BETWEEN_CHANGESET_ANALYZING_IN_SECONDS) {
+        $changesets_walker->analyzeUser($user_id, Config::MAX_CHANGESET_ANALYZING_IN_SECONDS);
+    }
 
     $changesets_dao = new ChangesetsDao($mysqli);
     $changesets_walker_state_dao = new ChangesetsWalkerStateDao($mysqli);

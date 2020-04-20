@@ -96,19 +96,38 @@ class ChangesetsWalkerStateDao
         $stmt->close();
     }
 
-	private function updateLastUpdateDate(int $user_id)
-	{
-		// unfortunately it is not possible to create the column last_update in the table with
-		// the modifier "DEFAULT UTC_TIMESTAMP ON UPDATE UTC_TIMESTAMP" (=auto-update timestamp
-		// on every update). Se we need to do it manually.
-		$stmt = $this->mysqli->prepare(
-			'UPDATE changesets_walker_state
-			 SET last_update = UTC_TIMESTAMP
-			 WHERE user_id = ?');
-		$stmt->bind_param('i', $user_id);
+    private function updateLastUpdateDate(int $user_id)
+    {
+        // unfortunately it is not possible to create the column last_update in the table with
+        // the modifier "DEFAULT UTC_TIMESTAMP ON UPDATE UTC_TIMESTAMP" (=auto-update timestamp
+        // on every update). Se we need to do it manually.
+        $stmt = $this->mysqli->prepare(
+            'UPDATE changesets_walker_state
+             SET last_update = UTC_TIMESTAMP
+             WHERE user_id = ?');
+        $stmt->bind_param('i', $user_id);
         $stmt->execute();
         $stmt->close();
-	}
+    }
+    
+    public function getLastUpdateDate(int $user_id): int
+    {
+        $stmt = $this->mysqli->prepare(
+            'SELECT last_update
+              FROM changesets_walker_state 
+              WHERE user_id = ?'
+        );
+        $stmt->bind_param('i', $user_id);
+        $stmt->execute();
+        $row = $stmt->get_result()->fetch_row();
+        if ($row) {
+            $r = strtotime($row[0]);
+        } else {
+            $r = strtotime('2017-02-20');
+        }
+        $stmt->close();
+        return $r;
+    }
 
     public function getCurrentAnalyzingRange(int $user_id): array
     {

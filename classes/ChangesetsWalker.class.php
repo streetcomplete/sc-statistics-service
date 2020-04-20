@@ -97,6 +97,10 @@ class ChangesetsWalker
        $this->recheckOpenChangesets($user_id);
     }
 
+    public function getLastUpdateDate(int $user_id): int {
+		return $this->changesetsWalkerStateDao->getLastUpdateDate($user_id);
+	}
+
     /** Analyze the changeset history of users whose analyzing process is not finished yet */
     public function analyzeUnfinished(int $updated_before) {
         while($user_id = $this->changesetsWalkerStateDao->getUserIdWithUnfinishedAnalyzingRange($updated_before)) {
