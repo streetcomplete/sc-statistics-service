@@ -1,6 +1,6 @@
 # SC-Statistics-Service
 
-Tested with PHP 7.3.
+Tested with PHP 7.3 and MySQL 5.6.
 
 ## Deployment
 

@@ -49,16 +49,17 @@ class ReverseCountryGeocoder
           'CREATE TABLE boundaries (
             id VARCHAR(6) PRIMARY KEY NOT NULL,
             shape GEOMETRY NOT NULL
-        )');
+        ) ENGINE=MyISAM DEFAULT CHARSET=latin1;');
         $this->mysqli->query('ALTER TABLE boundaries ADD SPATIAL INDEX(shape)');
         $geojson = json_decode(file_get_contents($boundaries_file_path), true);
         $features = $geojson["features"];
         $this->mysqli->begin_transaction();
         foreach($features as $feature) {
             $id = $feature["properties"]["id"];
-            $geom = json_encode($feature["geometry"]);
+            $geom = geometryToWkt($feature["geometry"]);
+            // the function ST_GeomFromGeoJSON is not available in older MySQL versions
             $stmt = $this->mysqli->prepare(
-              'INSERT INTO boundaries (id, shape) VALUES (?, ST_GeomFromGeoJSON(?, 1, 3857))'
+              'INSERT INTO boundaries (id, shape) VALUES (?, ST_GeomFromText(?, 3857))'
             );
             $stmt->bind_param('ss', $id, $geom);
             $stmt->execute();
@@ -81,4 +82,32 @@ class ReverseCountryGeocoder
         $stmt->close();
         return $row ? true : false;
     }
+}
+
+function geometryToWkt(array $geojson_geometry): string {
+    $coords = $geojson_geometry['coordinates'];
+    $type = $geojson_geometry['type'];
+    if ($type == "Polygon") {
+        return 'POLYGON ' . polygonToWkt($coords);
+    } else if ($type == "MultiPolygon") {
+        return 'MULTIPOLYGON ' . multiPolygonToWkt($coords);
+    } else {
+        throw new Exception('Unexpected geometry type "'.$type.'" in boundaries file.');
+    }
+}
+
+function coordToWkt(array $coord): string {
+    return implode(' ', $coord);
+}
+
+function linestringToWkt(array $linestring): string {
+    return '(' . implode(', ', array_map('coordToWkt', $linestring)) . ')';
+}
+
+function polygonToWkt(array $polygon): string {
+    return '(' . implode(', ', array_map('linestringToWkt', $polygon)) . ')';
+}
+
+function multiPolygonToWkt(array $multi_polygon): string {
+    return '(' . implode(', ', array_map('polygonToWkt', $multi_polygon)) . ')';
 }
