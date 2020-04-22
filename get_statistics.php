@@ -10,6 +10,9 @@ date_default_timezone_set('UTC');
 
 header('Content-Type: application/json');
 
+/* when/if https://github.com/openstreetmap/openstreetmap-website/pull/2145 or similar is 
+ * merged, we might add a proper check here, requiring each user to prove to this API that 
+ * this user actually has an access token for the user it tries to get the statistics for. */
 if (!startsWith($_SERVER['HTTP_USER_AGENT'], "StreetComplete")) {
     returnError(403, 'This is not a public API');
 }
