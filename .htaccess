@@ -1,4 +1,4 @@
-DirectoryIndex get_statistics.html
+DirectoryIndex get_statistics.php
 Order Allow,Deny
 
 <Files get_statistics.php>
