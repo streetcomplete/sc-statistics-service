@@ -84,12 +84,12 @@ class ChangesetsWalkerStateDao
     private function setAnalyzingRangeDone(int $user_id)
     {
         $stmt = $this->mysqli->prepare(
-            'UPDATE changesets_walker_state
+            "UPDATE changesets_walker_state
              SET 
-              finished_analyzing_before_date_closed = newest_date_closed,
+              finished_analyzing_before_date_closed = COALESCE(newest_date_closed, '2017-02-20 00:00:00'),
               newest_date_closed = DEFAULT, 
               oldest_date_created = DEFAULT
-             WHERE user_id = ?'
+             WHERE user_id = ?"
         );
         $stmt->bind_param('i', $user_id);
         $stmt->execute();
