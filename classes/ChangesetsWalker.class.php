@@ -47,10 +47,8 @@ class ChangesetsWalker
             $created_before = $range[1];
             
             $changesets = $this->changesetsFetcher->fetchForUser($user_id, $closed_after, $created_before);
-            // OSM API doesn't know this user or no changesets have been found
-            if (!isset($changesets) || count($changesets) == 0) {
-                // we still want to record the last update date
-                $this->changesetsWalkerStateDao->update($user_id);
+            // OSM API doesn't know this user
+            if (!isset($changesets)) {
                 break;
             }
             
