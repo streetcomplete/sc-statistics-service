@@ -41,6 +41,7 @@ try {
     $solved_by_country = $changesets_dao->getSolvedQuestsByCountry($user_id);
     $days_active = $changesets_dao->getDaysActive($user_id);
     $last_update = $changesets_walker_state_dao->getFinishedAnalyzingBeforeDateClosed($user_id);
+    $is_analyzing = $changesets_walker_state_dao->isAnalyzing($user_id);
 
     $mysqli->close();
 } catch (Exception $e) {
@@ -52,7 +53,8 @@ exit(json_encode(array(
     'questTypes' => $solved_quest_types,
     'countries' => $solved_by_country,
     'daysActive' => $days_active,
-    'lastUpdate' => date('c', $last_update)
+    'lastUpdate' => date('c', $last_update),
+    'isAnalyzing' => $is_analyzing
 )));
 
 function returnError($code, $message)

@@ -154,6 +154,24 @@ class ChangesetsWalkerStateDao
         return $r;
     }
     
+    public function isAnalyzing(int $user_id): bool
+    {
+        $stmt = $this->mysqli->prepare(
+            'SELECT newest_date_closed FROM changesets_walker_state WHERE user_id = ?'
+        );
+        $stmt->bind_param('i', $user_id);
+        $stmt->execute();
+        $row = $stmt->get_result()->fetch_row();
+        $r;
+        if ($row) {
+            $r = isset($row[0]);
+        } else {
+            $r = false;
+        }
+        $stmt->close();
+        return $r;
+    }
+
     public function getUserIdWithUnfinishedAnalyzingRange(int $updated_before): ?int
     {
         $stmt = $this->mysqli->prepare(
