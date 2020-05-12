@@ -104,10 +104,10 @@ class ChangesetsDao
     public function getSolvedQuestsByCountry(int $user_id): array
     {
         $stmt = $this->mysqli->prepare(
-            'SELECT country_code, SUM(solved_quest_count)
+            'SELECT SUBSTRING_INDEX(country_code, "-", 1), SUM(solved_quest_count)
               FROM changesets
               WHERE user_id = ?
-              GROUP BY country_code'
+              GROUP BY SUBSTRING_INDEX(country_code, "-", 1)'
         );
         $stmt->bind_param('i', $user_id);
         $stmt->execute();
