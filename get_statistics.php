@@ -2,6 +2,7 @@
 require_once 'config.php';
 require_once 'classes/ChangesetsWalker.class.php';
 require_once 'classes/ChangesetsDao.class.php';
+require_once 'classes/UserRanksDao.class.php';
 require_once 'classes/ChangesetsWalkerStateDao.class.php';
 
 //mysqli_report(MYSQLI_REPORT_ERROR | MYSQLI_REPORT_STRICT);
@@ -36,10 +37,12 @@ try {
 
     $changesets_dao = new ChangesetsDao($mysqli);
     $changesets_walker_state_dao = new ChangesetsWalkerStateDao($mysqli);
-
     $solved_quest_types = $changesets_dao->getSolvedQuestCounts($user_id);
     $solved_by_country = $changesets_dao->getSolvedQuestsByCountry($user_id);
     $days_active = $changesets_dao->getDaysActive($user_id);
+    $user_ranks_dao = new UserRanksDao($mysqli);
+    $rank = $user_ranks_dao->getRank($user_id);
+    $country_ranks = $user_ranks_dao->getCountryRanks($user_id);
     $last_update = $changesets_walker_state_dao->getFinishedAnalyzingBeforeDateClosed($user_id);
     $is_analyzing = $changesets_walker_state_dao->isAnalyzing($user_id);
 
@@ -53,6 +56,8 @@ exit(json_encode(array(
     'questTypes' => $solved_quest_types,
     'countries' => $solved_by_country,
     'daysActive' => $days_active,
+    'rank' => $rank,
+    'countryRanks' => $country_ranks,
     'lastUpdate' => date('c', $last_update),
     'isAnalyzing' => $is_analyzing
 )));
