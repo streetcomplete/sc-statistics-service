@@ -8,4 +8,4 @@ Tested with PHP 7.3 and MySQL 5.6.
 - Perform appropriate file protection measures if included `.htaccess` file is not used
 - Create `config.php` from `config.sample.php` template and fill with production settings
 - Create the respective database
-- `delete_data_of_deleted_users.php` should be scheduled to run daily, `update_incomplete_statistics.php` should be scheduled to run in regular intervals, for example every minute or so
+- `delete_data_of_deleted_users.php` should be scheduled to run daily, `update_incomplete_statistics.php` should be scheduled to run in regular intervals, for example every minute or so, `generate_ranks.php` should be scheduled to run in regular intervals, hourly is good, but can be in shorter intervals as well
