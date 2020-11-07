@@ -43,7 +43,7 @@ try {
     $user_ranks_dao = new UserRanksDao($mysqli);
     $rank = $user_ranks_dao->getRank($user_id);
     $country_ranks = $user_ranks_dao->getCountryRanks($user_id);
-    $last_update = $changesets_walker_state_dao->getFinishedAnalyzingBeforeDateClosed($user_id);
+    $last_update = $changesets_walker_state_dao->getLastUpdateDate($user_id);
     $is_analyzing = $changesets_walker_state_dao->isAnalyzing($user_id);
 
     $mysqli->close();
