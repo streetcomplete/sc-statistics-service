@@ -24,11 +24,15 @@ class ReverseCountryGeocoder
     public function getIsoCodes($longitude, $latitude): array {
         $stmt = $this->mysqli->prepare(
         'SELECT id FROM boundaries
-          WHERE ST_Contains(shape, Point(?,?))'
+          WHERE ST_Contains(shape, ST_GeomFromText(?, 3857))'
         );
-        $stmt->bind_param('dd', $longitude, $latitude);
+        $point = 'POINT(' . $longitude . ' ' . $latitude . ')';
+        $stmt->bind_param('s', $point);
         $stmt->execute();
         $result = $stmt->get_result();
+        if (!$result) {
+            throw new Exception($this->mysqli->error);
+        }
         $r = array();
         while ($row = $result->fetch_row()) {
             $iso = $row[0];
