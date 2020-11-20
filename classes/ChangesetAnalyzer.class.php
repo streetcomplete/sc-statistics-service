@@ -1,6 +1,6 @@
 <?php
 
-require_once 'ChangesetModifiedElementsFetcher.class.php';
+require_once 'ChangesetElementIdsFetcher.class.php';
 require_once 'ReverseCountryGeocoder.class.php';
 
 /** Does further analysis on a changeset and adds this data to it. Currently 
@@ -9,12 +9,12 @@ require_once 'ReverseCountryGeocoder.class.php';
  */
 class ChangesetAnalyzer {
 
-    private $changesetModifiedElementsFetcher;
+    private $changesetElementIdsFetcher;
     private $geocoder;
     
     public function __construct(mysqli $mysqli, string $db_name, string $osm_user = null, string $osm_pass = null)
     {
-        $this->changesetModifiedElementsFetcher = new ChangesetModifiedElementsFetcher($osm_user, $osm_pass);
+        $this->changesetElementIdsFetcher = new ChangesetElementIdsFetcher($osm_user, $osm_pass);
         $this->geocoder = new ReverseCountryGeocoder($mysqli, $db_name, 'data'.DIRECTORY_SEPARATOR.'boundaries.json');
     }
 
@@ -36,19 +36,25 @@ class ChangesetAnalyzer {
     private function getSolvedQuestsCountOfChangeset(int $changeset_id): ?int
     {
         /* the changes_count attribute of the changeset is not always equal to the actual
-        * solved quest count. It deviates for the following cases:
-        * 1. changes were reverted. Each revert counts as an additional change towards changes_count
-        * 2. a way was split. A split may create new nodes at the split positions and creates new
-        *    way(s).
+        *  solved quest count. It deviates for the following cases:
+        *  1. changes were reverted. Each revert counts as an additional change towards changes_count
+        *  2. a way was split. A split may create new nodes at the split positions and creates new
+        *     way(s).
         */
-        // So, firstly, we only count MODIFIED elements.
-        $elements = $this->changesetModifiedElementsFetcher->fetch($changeset_id);
+
+        // So, firstly, we only count modified and deleted elements.
+        $elements = $this->changesetElementIdsFetcher->fetch($changeset_id);
         if (!isset($elements)) return null;
+        
+        $nodes = $elements->modifications->nodes + $elements->deletions->nodes;
+        $ways = $elements->modifications->ways + $elements->deletions->ways;
+        $relations = $elements->modifications->relations + $elements->deletions->relations;
+        
         // Secondly, we look for elements that have been changed multiple times in the changeset.
         return
-            $this->getSolvedQuestsCount($elements["nodes"]) +
-            $this->getSolvedQuestsCount($elements["ways"]) +
-            $this->getSolvedQuestsCount($elements["relations"]);
+            $this->getSolvedQuestsCount($nodes) +
+            $this->getSolvedQuestsCount($ways) +
+            $this->getSolvedQuestsCount($relations);
     }
 
     /** returns number of changed element ids, subtracting any reverts */

@@ -96,8 +96,8 @@ class ChangesetsWalker
     }
 
     public function getLastUpdateDate(int $user_id): int {
-		return $this->changesetsWalkerStateDao->getLastUpdateDate($user_id);
-	}
+        return $this->changesetsWalkerStateDao->getLastUpdateDate($user_id);
+    }
 
     /** Analyze the changeset history of users whose analyzing process is not finished yet */
     public function analyzeUnfinished(int $updated_before) {
