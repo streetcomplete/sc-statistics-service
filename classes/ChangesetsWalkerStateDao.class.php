@@ -56,9 +56,10 @@ class ChangesetsWalkerStateDao
     private function updateNewestDateClosed(int $user_id, int $newest_date_closed)
     {
         $stmt = $this->mysqli->prepare(
-            'INSERT INTO changesets_walker_state (user_id, newest_date_closed) VALUES (?,?)
+            'INSERT INTO changesets_walker_state (user_id, newest_date_closed, last_update) VALUES (?,?,UTC_TIMESTAMP)
              ON DUPLICATE KEY UPDATE 
-             newest_date_closed = GREATEST(COALESCE(newest_date_closed, ?), ?)'
+             newest_date_closed = GREATEST(COALESCE(newest_date_closed, ?), ?),
+             last_update = UTC_TIMESTAMP'
         );
         $min_date = '1000-01-01 00:00:00'; // MIN MySQL DATETIME
         $date = date('Y-m-d H:i:s', $newest_date_closed);
@@ -70,9 +71,10 @@ class ChangesetsWalkerStateDao
     private function updateOldestDateCreated(int $user_id, int $oldest_date_created)
     {
         $stmt = $this->mysqli->prepare(
-            'INSERT INTO changesets_walker_state (user_id, oldest_date_created) VALUES (?,?)
+            'INSERT INTO changesets_walker_state (user_id, oldest_date_created, last_update) VALUES (?,?,UTC_TIMESTAMP)
              ON DUPLICATE KEY UPDATE 
-             oldest_date_created = LEAST(COALESCE(oldest_date_created, ?), ?)'
+             oldest_date_created = LEAST(COALESCE(oldest_date_created, ?), ?),
+             last_update = UTC_TIMESTAMP'
         );
         $max_date = '9999-12-31 23:59:59'; // MAX MySQL DATETIME
         $date = date('Y-m-d H:i:s', $oldest_date_created);
@@ -88,7 +90,8 @@ class ChangesetsWalkerStateDao
              SET 
               finished_analyzing_before_date_closed = COALESCE(newest_date_closed, '2017-02-20 00:00:00'),
               newest_date_closed = DEFAULT, 
-              oldest_date_created = DEFAULT
+              oldest_date_created = DEFAULT,
+              last_update = UTC_TIMESTAMP
              WHERE user_id = ?"
         );
         $stmt->bind_param('i', $user_id);
