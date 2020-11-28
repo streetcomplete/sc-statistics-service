@@ -17,4 +17,8 @@ class Config
     /* time that must pass before a repeated query of a user to get his statistics triggers 
      * the backend to continue scanning the users' changeset history via the OSM API. */
     const MIN_DELAY_BETWEEN_CHANGESET_ANALYZING_IN_SECONDS = 30;
+    
+    /* time the cronjob should spend on analyzing changesets at most (i.e. should be lower than
+     * PHP timeout) */
+    const MAX_CRON_CHANGESET_ANALYZING_IN_SECONDS = 300;
 }

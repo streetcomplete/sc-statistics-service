@@ -100,9 +100,12 @@ class ChangesetsWalker
     }
 
     /** Analyze the changeset history of users whose analyzing process is not finished yet */
-    public function analyzeUnfinished(int $updated_before) {
+    public function analyzeUnfinished(int $updated_before, int $timeout_in_seconds = null) {
+        $start_time = time();
         while($user_id = $this->changesetsWalkerStateDao->getUserIdWithUnfinishedAnalyzingRange($updated_before)) {
-            $this->analyzeUser($user_id);
+            $rest_time = time() - $start_time;
+            if (isset($timeout_in_seconds) && $rest_time >= $timeout_in_seconds) break;
+            $this->analyzeUser($user_id, $timeout_in_seconds - $rest_time);
         }
     }
 

@@ -21,7 +21,7 @@ date_default_timezone_set('UTC');
 $mysqli = new mysqli(Config::DB_HOST, Config::DB_USER, Config::DB_PASS, Config::DB_NAME);
 $changesets_walker = new ChangesetsWalker($mysqli, Config::DB_NAME, Config::OSM_API_USER, Config::OSM_API_PASS);
 // will only finish analyzations that have been untouched for 30 seconds or more
-$changesets_walker->analyzeUnfinished(time() - 30);
+$changesets_walker->analyzeUnfinished(time() - 30, Config::MAX_CRON_CHANGESET_ANALYZING_IN_SECONDS);
 $mysqli->close();
 
 http_response_code(200);
