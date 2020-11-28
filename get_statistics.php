@@ -56,7 +56,7 @@ exit(json_encode(array(
     'questTypes' => empty($solved_quest_types) ? new stdClass() : $solved_quest_types,
     'countries' => empty($solved_by_country) ? new stdClass() : $solved_by_country,
     'daysActive' => $days_active,
-    'rank' => $rank,
+    'rank' => $rank ? $rank : -1,
     'countryRanks' => empty($country_ranks) ? new stdClass() : $country_ranks,
     'lastUpdate' => date('c', $last_update),
     'isAnalyzing' => $is_analyzing
