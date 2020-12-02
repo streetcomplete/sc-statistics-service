@@ -20,6 +20,7 @@ CREATE TABLE IF NOT EXISTS user_ranks(
   user_id BIGINT UNSIGNED,
   country_code VARCHAR(6) DEFAULT NULL,
   rank INT NOT NULL,
+  solved_quest_count INT,
   CONSTRAINT user_pkey PRIMARY KEY (user_id, country_code)
 );
 
@@ -29,8 +30,8 @@ CREATE TEMPORARY TABLE solved_quest_counts_by_user AS
   SELECT user_id, SUM(solved_quest_count) as solved_quest_count
   FROM changesets GROUP BY user_id;
 
-INSERT INTO user_ranks (user_id, rank)
-  SELECT user_id, @rank := @rank + 1 rank
+INSERT INTO user_ranks (user_id, rank, solved_quest_count)
+  SELECT user_id, @rank := @rank + 1 rank, solved_quest_count
   FROM solved_quest_counts_by_user, (SELECT @rank := 0) init
   ORDER BY solved_quest_count DESC;
 
@@ -57,7 +58,7 @@ BEGIN
     END IF;
     
     INSERT INTO user_ranks
-      SELECT user_id, country_code, @rank := @rank + 1 rank
+      SELECT user_id, country_code, @rank := @rank + 1 rank, solved_quest_count
       FROM solved_quest_counts_by_user_and_country, (SELECT @rank := 0) init
       WHERE country_code = current_country_code
       ORDER BY solved_quest_count DESC;
