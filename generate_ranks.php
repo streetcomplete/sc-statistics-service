@@ -36,6 +36,7 @@ INSERT INTO user_ranks (user_id, rank, solved_quest_count)
   ORDER BY solved_quest_count DESC;
 
 DROP PROCEDURE IF EXISTS insert_country_ranks;
+DELIMITER //
 CREATE PROCEDURE insert_country_ranks()
 BEGIN
 
@@ -66,7 +67,8 @@ BEGIN
   END LOOP;
 
   CLOSE all_country_codes;
-END;
+END//
+DELIMITER ;
 CALL insert_country_ranks;
 
 COMMIT;
