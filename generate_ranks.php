@@ -12,31 +12,8 @@ require_once 'config.php';
 
 mysqli_report(MYSQLI_REPORT_ERROR | MYSQLI_REPORT_STRICT);
 
-$mysqli = new mysqli(Config::DB_HOST, Config::DB_USER, Config::DB_PASS, Config::DB_NAME);
-$mysqli->multi_query("
-START TRANSACTION;
-
-CREATE TABLE IF NOT EXISTS user_ranks(
-  user_id BIGINT UNSIGNED,
-  country_code VARCHAR(6) DEFAULT '',
-  rank INT NOT NULL,
-  solved_quest_count INT,
-  CONSTRAINT user_pkey PRIMARY KEY (user_id, country_code)
-);
-
-DELETE FROM user_ranks;
-
-CREATE TEMPORARY TABLE solved_quest_counts_by_user AS 
-  SELECT user_id, SUM(solved_quest_count) as solved_quest_count
-  FROM changesets GROUP BY user_id;
-
-INSERT INTO user_ranks (user_id, rank, solved_quest_count)
-  SELECT user_id, @rank := @rank + 1 rank, solved_quest_count
-  FROM solved_quest_counts_by_user, (SELECT @rank := 0) init
-  ORDER BY solved_quest_count DESC;
-
-DROP PROCEDURE IF EXISTS insert_country_ranks;
-DELIMITER //
+// this must be executed manually (i.e. via phpmyadmin) once. No idea why, but it doesn't work anymore via mysqli
+$create_procedure = "DELIMITER //
 CREATE PROCEDURE insert_country_ranks()
 BEGIN
 
@@ -68,7 +45,32 @@ BEGIN
 
   CLOSE all_country_codes;
 END//
-DELIMITER ;
+DELIMITER ;";
+
+$mysqli = new mysqli(Config::DB_HOST, Config::DB_USER, Config::DB_PASS, Config::DB_NAME);
+$mysqli->multi_query("
+
+CREATE TABLE IF NOT EXISTS user_ranks(
+  user_id BIGINT UNSIGNED,
+  country_code VARCHAR(6) DEFAULT '',
+  rank INT NOT NULL,
+  solved_quest_count INT,
+  CONSTRAINT user_pkey PRIMARY KEY (user_id, country_code)
+);
+
+START TRANSACTION;
+
+DELETE FROM user_ranks;
+
+CREATE TEMPORARY TABLE solved_quest_counts_by_user AS 
+  SELECT user_id, SUM(solved_quest_count) as solved_quest_count
+  FROM changesets GROUP BY user_id;
+
+INSERT INTO user_ranks (user_id, rank, solved_quest_count)
+  SELECT user_id, @rank := @rank + 1 rank, solved_quest_count
+  FROM solved_quest_counts_by_user, (SELECT @rank := 0) init
+  ORDER BY solved_quest_count DESC;
+
 CALL insert_country_ranks;
 
 COMMIT;
