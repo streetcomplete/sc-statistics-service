@@ -15,7 +15,7 @@
             "server": "localhost",
             "previewLimit": 50,
             "port": 3306,
-            "database": "mariadb",
+            "database": "statistics",
             "username": "root",
             "password": "mariadb"
         }]

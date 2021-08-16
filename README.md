@@ -13,6 +13,6 @@ Tested with PHP 7.3 and MySQL 5.6.
 ## Development
 
 - Open project in [devcontainer](https://code.visualstudio.com/docs/remote/containers-tutorial)
-- Create `config.php` from `config.sample.php` template and fill with production settings
+- Create `config.php` from `config.sample.php` template and fill with development settings
 - Run scripts with `php <SCRIPT>`
 - Run webserver with `php -S localhost:8080` and go to `http://localhost:8080/get_statistics.php?user_id=<USER_ID>`

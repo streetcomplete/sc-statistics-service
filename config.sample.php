@@ -1,7 +1,7 @@
 <?php
 class Config
 {
-    const DB_HOST = "localhost";
+    const DB_HOST = "db";
     const DB_NAME = "statistics";
     const DB_USER = "statistics_user";
     const DB_PASS = "statistics_pw";
