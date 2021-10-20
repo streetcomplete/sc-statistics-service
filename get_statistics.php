@@ -9,10 +9,8 @@ require_once 'classes/ChangesetsWalkerStateDao.class.php';
 // all calculations must be done in UTC!
 date_default_timezone_set('UTC');
 
-header('Content-Type: application/json');
-
-/* when/if https://github.com/openstreetmap/openstreetmap-website/pull/2145 or similar is 
- * merged, we might add a proper check here, requiring each user to prove to this API that 
+/* when/if https://github.com/openstreetmap/openstreetmap-website/pull/2145 or similar is
+ * merged, we might add a proper check here, requiring each user to prove to this API that
  * this user actually has an access token for the user it tries to get the statistics for. */
 if (!startsWith($_SERVER['HTTP_USER_AGENT'], "StreetComplete")) {
     returnError(403, 'This is not a public API');
@@ -52,6 +50,7 @@ try {
 }
 
 http_response_code(200);
+header('Content-Type: application/json');
 exit(json_encode(array(
     'questTypes' => empty($solved_quest_types) ? new stdClass() : $solved_quest_types,
     'countries' => empty($solved_by_country) ? new stdClass() : $solved_by_country,
@@ -65,6 +64,7 @@ exit(json_encode(array(
 function returnError($code, $message)
 {
     http_response_code($code);
+    header('Content-Type: application/json');
     exit(json_encode(array('error' => $message)));
 }
 
