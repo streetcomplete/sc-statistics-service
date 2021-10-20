@@ -121,6 +121,53 @@ class ChangesetsDao
         return $r;
     }
 
+    /** Returns associative array of country iso code -> solved count */
+    public function getSolvedQuestsByCountryCurrentWeek(int $user_id): array
+    {
+        $stmt = $this->mysqli->prepare(
+            'SELECT SUBSTRING_INDEX(country_code, "-", 1), SUM(solved_quest_count)
+              FROM changesets
+              WHERE user_id = ?
+              AND created_at >= ( DATE_SUB(CURDATE(), INTERVAL WEEKDAY(CURDATE()) DAY) )
+            --   WHERE user_id = ? AND created_at >= ( CURDATE() - INTERVAL 7 DAY )
+              GROUP BY SUBSTRING_INDEX(country_code, "-", 1)'
+        );
+        $stmt->bind_param('i', $user_id);
+        $stmt->execute();
+        $result = $stmt->get_result();
+        $r = array();
+        while ($row = $result->fetch_row()) {
+            if (!$row[0]) continue;
+            $r[$row[0]] = intval($row[1]);
+        }
+        $stmt->close();
+        return $r;
+    }
+
+    /** Returns associative array of country iso code -> solved count */
+    public function getSolvedQuestsByCountryLastWeek(int $user_id): array
+    {
+        $stmt = $this->mysqli->prepare(
+            'SELECT SUBSTRING_INDEX(country_code, "-", 1), SUM(solved_quest_count)
+              FROM changesets
+              WHERE user_id = ?
+              AND created_at >= ( DATE_SUB(CURDATE(), INTERVAL WEEKDAY(CURDATE()) + 7 DAY) )
+              AND created_at < ( DATE_SUB(CURDATE(), INTERVAL WEEKDAY(CURDATE()) DAY) )
+            --   WHERE user_id = ? AND created_at >= ( CURDATE() - INTERVAL 7 DAY )
+              GROUP BY SUBSTRING_INDEX(country_code, "-", 1)'
+        );
+        $stmt->bind_param('i', $user_id);
+        $stmt->execute();
+        $result = $stmt->get_result();
+        $r = array();
+        while ($row = $result->fetch_row()) {
+            if (!$row[0]) continue;
+            $r[$row[0]] = intval($row[1]);
+        }
+        $stmt->close();
+        return $r;
+    }
+
     /** Returns the number of days the user created changesets */
     public function getDaysActive(int $user_id): int
     {

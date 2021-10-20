@@ -39,10 +39,16 @@ try {
     $changesets_walker_state_dao = new ChangesetsWalkerStateDao($mysqli);
     $solved_quest_types = $changesets_dao->getSolvedQuestCounts($user_id);
     $solved_by_country = $changesets_dao->getSolvedQuestsByCountry($user_id);
+    $solved_by_country_current_week = $changesets_dao->getSolvedQuestsByCountryCurrentWeek($user_id);
+    $solved_by_country_last_week = $changesets_dao->getSolvedQuestsByCountryLastWeek($user_id);
     $days_active = $changesets_dao->getDaysActive($user_id);
     $user_ranks_dao = new UserRanksDao($mysqli);
     $rank = $user_ranks_dao->getRank($user_id);
+    $rank_current_week = $user_ranks_dao->getRankCurrentWeek($user_id);
+    $rank_last_week = $user_ranks_dao->getRankLastWeek($user_id);
     $country_ranks = $user_ranks_dao->getCountryRanks($user_id);
+    $country_ranks_current_week = $user_ranks_dao->getCountryRanksCurrentWeek($user_id);
+    $country_ranks_last_week = $user_ranks_dao->getCountryRanksLastWeek($user_id);
     $last_update = $changesets_walker_state_dao->getLastUpdateDate($user_id);
     $is_analyzing = $changesets_walker_state_dao->isAnalyzing($user_id);
 
@@ -55,9 +61,15 @@ http_response_code(200);
 exit(json_encode(array(
     'questTypes' => empty($solved_quest_types) ? new stdClass() : $solved_quest_types,
     'countries' => empty($solved_by_country) ? new stdClass() : $solved_by_country,
+    'countriesCurrentWeek' => empty($solved_by_country_current_week) ? new stdClass() : $solved_by_country_current_week,
+    'countriesLastWeek' => empty($solved_by_country_last_week) ? new stdClass() : $solved_by_country_last_week,
     'daysActive' => $days_active,
     'rank' => $rank ? $rank : -1,
+    'rankCurrentWeek' => $rank_current_week ? $rank_current_week : -1,
+    'rankLastWeek' => $rank_last_week ? $rank_last_week : -1,
     'countryRanks' => empty($country_ranks) ? new stdClass() : $country_ranks,
+    'countryRanksCurrentWeek' => empty($country_ranks) ? new stdClass() : $country_ranks,
+    'countryRanksLastWeek' => empty($country_ranks) ? new stdClass() : $country_ranks,
     'lastUpdate' => date('c', $last_update),
     'isAnalyzing' => $is_analyzing
 )));
