@@ -47,7 +47,7 @@ while (($line = fgets($handle)) !== false) {
 
     if ($count % 10000 == 0) {
         $mysqli->commit();
-        //echo "".$user_id."\n";
+        //echo $user_id . PHP_EOL;
         $mysqli->begin_transaction();
     }
 }
