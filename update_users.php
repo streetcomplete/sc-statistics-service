@@ -24,12 +24,12 @@ $user_ids = explode(",", $user_ids_str);
 
 $mysqli = new mysqli(Config::DB_HOST, Config::DB_USER, Config::DB_PASS, Config::DB_NAME);
 $changesets_walker = new ChangesetsWalker($mysqli, Config::DB_NAME, Config::OSM_API_USER, Config::OSM_API_PASS);
-echo 'analyzing... \n';
+echo 'analyzing...' . PHP_EOL;
 foreach ($user_ids as $user_id) {
-    echo ''.$user_id.'\n';
+    echo $user_id . PHP_EOL;
     $changesets_walker->analyzeUser($user_id);
 }
-echo 'done.\n';
+echo 'done.' . PHP_EOL;
 $mysqli->close();
 
 http_response_code(200);
