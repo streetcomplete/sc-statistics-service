@@ -143,7 +143,6 @@ class ChangesetsWalkerStateDao
         $stmt->execute();
         $row = $stmt->get_result()->fetch_assoc();
         // no entry yet
-        $r;
         if ($row) {
             $oldest_date_created = $row['oldest_date_created'];
             $r = array(
@@ -165,7 +164,6 @@ class ChangesetsWalkerStateDao
         $stmt->bind_param('i', $user_id);
         $stmt->execute();
         $row = $stmt->get_result()->fetch_row();
-        $r;
         if ($row) {
             $r = isset($row[0]);
         } else {
