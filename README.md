@@ -17,3 +17,7 @@ Tested with PHP 7.3 and MySQL 5.6.
 - For debugging set a breakpoint and run the `Listen for Xdebug` launch config before running any scripts
 - Run scripts with `php <SCRIPT>`
 - Run webserver with `php -S localhost:8080` and go to `http://localhost:8080/get_statistics.php?user_id=<USER_ID>`
+
+## Note
+
+- One of setup queries, for some reason, must be [manually executed](https://github.com/streetcomplete/sc-statistics-service/blob/master/generate_ranks.php#L15).
