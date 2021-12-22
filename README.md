@@ -2,6 +2,8 @@
 
 Tested with PHP 7.3 and MySQL 5.6.
 
+Versions earlier than PHP 7.3 will not work.
+
 ## Deployment
 
 - Copy this repository to a webserver
