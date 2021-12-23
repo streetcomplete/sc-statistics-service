@@ -43,6 +43,9 @@ class ChangesetElementIdsFetcher
         }
         $response->body = curl_exec($curl);
         $response->code = curl_getinfo($curl, CURLINFO_RESPONSE_CODE);
+        if($response->code == 0) {
+	        throw new Exception('query failed without receiving response, function returned code ' . $response->code . ' curl reports ' . curl_error($curl));
+        }
         curl_close($curl);
         return $response;
     }
