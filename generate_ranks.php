@@ -12,48 +12,13 @@ require_once 'config.php';
 
 mysqli_report(MYSQLI_REPORT_ERROR | MYSQLI_REPORT_STRICT);
 
-// this must be executed manually (i.e. via phpmyadmin) once. No idea why, but it doesn't work anymore via mysqli
-$create_procedure = "DELIMITER //
-CREATE PROCEDURE insert_country_ranks()
-BEGIN
-
-  DECLARE done INT DEFAULT FALSE;
-  DECLARE current_country_code VARCHAR(6);
-  DECLARE all_country_codes CURSOR FOR SELECT DISTINCT SUBSTRING_INDEX(country_code, '-', 1) FROM changesets;
-  DECLARE CONTINUE HANDLER FOR NOT FOUND SET done = TRUE;
-
-  CREATE TEMPORARY TABLE solved_quest_counts_by_user_and_country AS 
-    SELECT user_id, SUBSTRING_INDEX(country_code, '-', 1) AS country_code, SUM(solved_quest_count) as solved_quest_count
-    FROM changesets
-    GROUP BY user_id, SUBSTRING_INDEX(country_code, '-', 1);
-  
-  OPEN all_country_codes;
-  
-  country_ranks_loop: LOOP
-    FETCH all_country_codes INTO current_country_code;
-    IF done THEN
-      LEAVE country_ranks_loop;
-    END IF;
-    
-    INSERT INTO user_ranks
-      SELECT user_id, country_code, @rank := @rank + 1 rank, solved_quest_count
-      FROM solved_quest_counts_by_user_and_country, (SELECT @rank := 0) init
-      WHERE country_code = current_country_code
-      ORDER BY solved_quest_count DESC;
-    
-  END LOOP;
-
-  CLOSE all_country_codes;
-END//
-DELIMITER ;";
-
 $mysqli = new mysqli(Config::DB_HOST, Config::DB_USER, Config::DB_PASS, Config::DB_NAME);
 $mysqli->multi_query("
 
 CREATE TABLE IF NOT EXISTS user_ranks(
   user_id BIGINT UNSIGNED,
   country_code VARCHAR(6) DEFAULT '',
-  rank INT NOT NULL,
+  rank INT,
   solved_quest_count INT,
   CONSTRAINT user_pkey PRIMARY KEY (user_id, country_code)
 );
@@ -62,16 +27,19 @@ START TRANSACTION;
 
 DELETE FROM user_ranks;
 
-CREATE TEMPORARY TABLE solved_quest_counts_by_user AS 
-  SELECT user_id, SUM(solved_quest_count) as solved_quest_count
-  FROM changesets GROUP BY user_id;
+INSERT INTO user_ranks (user_id, country_code, solved_quest_count)
+  SELECT user_id, country_code, SUM(solved_quest_count)
+  FROM changesets GROUP BY user_id, country_code;
 
-INSERT INTO user_ranks (user_id, rank, solved_quest_count)
-  SELECT user_id, @rank := @rank + 1 rank, solved_quest_count
-  FROM solved_quest_counts_by_user, (SELECT @rank := 0) init
-  ORDER BY solved_quest_count DESC;
+REPLACE INTO user_ranks (user_id, country_code, solved_quest_count)
+  SELECT user_id, NULL, SUM(solved_quest_count)
+  FROM user_ranks GROUP BY user_id;
 
-CALL insert_country_ranks;
+REPLACE INTO user_ranks (user_id, country_code, solved_quest_count, rank)
+  SELECT 
+    user_id, country_code, solved_quest_count,
+	DENSE_RANK() OVER (PARTITION BY country_code ORDER BY solved_quest_count DESC)
+  FROM user_ranks;
 
 COMMIT;
 ");

@@ -17,7 +17,7 @@ class UserRanksDao
             'CREATE TABLE IF NOT EXISTS user_ranks(
               user_id BIGINT UNSIGNED,
               country_code VARCHAR(6) DEFAULT "",
-              rank INT NOT NULL,
+              rank INT,
               solved_quest_count INT,
               CONSTRAINT user_pkey PRIMARY KEY (user_id, country_code)
             );'
