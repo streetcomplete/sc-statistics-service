@@ -28,8 +28,8 @@ START TRANSACTION;
 DELETE FROM user_ranks;
 
 INSERT INTO user_ranks (user_id, country_code, solved_quest_count)
-  SELECT user_id, country_code, SUM(solved_quest_count)
-  FROM changesets GROUP BY user_id, country_code;
+  SELECT user_id, SUBSTRING_INDEX(country_code, '-', 1), SUM(solved_quest_count)
+  FROM changesets GROUP BY user_id, SUBSTRING_INDEX(country_code, '-', 1);
 
 REPLACE INTO user_ranks (user_id, country_code, solved_quest_count)
   SELECT user_id, NULL, SUM(solved_quest_count)
