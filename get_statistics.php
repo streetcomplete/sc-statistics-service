@@ -34,13 +34,21 @@ try {
     }
 
     $changesets_dao = new ChangesetsDao($mysqli);
-    $changesets_walker_state_dao = new ChangesetsWalkerStateDao($mysqli);
     $solved_quest_types = $changesets_dao->getSolvedQuestCounts($user_id);
     $solved_by_country = $changesets_dao->getSolvedQuestsByCountry($user_id);
+    $current_week_solved_quest_types = $changesets_dao->getSolvedQuestCounts($user_id, 7);
+    $current_week_solved_by_country = $changesets_dao->getSolvedQuestsByCountry($user_id, 7);
     $days_active = $changesets_dao->getDaysActive($user_id);
+
     $user_ranks_dao = new UserRanksDao($mysqli);
     $rank = $user_ranks_dao->getRank($user_id);
     $country_ranks = $user_ranks_dao->getCountryRanks($user_id);
+
+    $user_current_week_ranks_dao = new UserRanksDao($mysqli, 'user_ranks_current_week');
+    $current_week_rank = $user_current_week_ranks_dao->getRank($user_id);
+    $current_week_country_ranks = $user_current_week_ranks_dao->getCountryRanks($user_id);
+
+    $changesets_walker_state_dao = new ChangesetsWalkerStateDao($mysqli);
     $last_update = $changesets_walker_state_dao->getLastUpdateDate($user_id);
     $is_analyzing = $changesets_walker_state_dao->isAnalyzing($user_id);
 
@@ -58,7 +66,11 @@ exit(json_encode(array(
     'rank' => $rank ? $rank : -1,
     'countryRanks' => empty($country_ranks) ? new stdClass() : $country_ranks,
     'lastUpdate' => date('c', $last_update),
-    'isAnalyzing' => $is_analyzing
+    'isAnalyzing' => $is_analyzing,
+    'currentWeekRank' => $current_week_rank ? $current_week_rank : -1,
+    'currentWeekCountryRanks' => empty($current_week_country_ranks) ? new stdClass() : $current_week_country_ranks,
+    'currentWeekQuestTypes' => empty($current_week_solved_quest_types) ? new stdClass() : $current_week_solved_quest_types,
+    'currentWeekCountries' => empty($current_week_solved_by_country) ? new stdClass() : $current_week_solved_by_country
 )));
 
 function returnError($code, $message)
