@@ -5,8 +5,9 @@ class UserRanksDao
 {
     private $mysqli;
 
-    public function __construct($mysqli)
+    public function __construct($mysqli, string $table = "user_ranks")
     {
+        $this->table = $table;
         $this->mysqli = $mysqli;
         $this->createTable();
     }
@@ -14,7 +15,7 @@ class UserRanksDao
     function createTable()
     {
         $this->mysqli->query(
-            'CREATE TABLE IF NOT EXISTS user_ranks(
+            'CREATE TABLE IF NOT EXISTS '.$this->table.'(
               user_id BIGINT UNSIGNED,
               country_code VARCHAR(6) DEFAULT "",
               rank INT,
@@ -28,7 +29,7 @@ class UserRanksDao
     public function getRank(int $user_id): ?int
     {
         $stmt = $this->mysqli->prepare(
-            'SELECT rank FROM user_ranks WHERE user_id = ? AND country_code = ""'
+            'SELECT rank FROM '.$this->table.' WHERE user_id = ? AND country_code = ""'
         );
         $stmt->bind_param('i', $user_id);
         $stmt->execute();
@@ -42,7 +43,7 @@ class UserRanksDao
     {
         $stmt = $this->mysqli->prepare(
             'SELECT country_code, rank
-              FROM user_ranks
+              FROM '.$this->table.'
               WHERE user_id = ? AND country_code != ""'
         );
         $stmt->bind_param('i', $user_id);

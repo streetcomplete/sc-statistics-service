@@ -80,13 +80,17 @@ class ChangesetsDao
         return $r;
     }
     
-    /** Returns associative array of quest_type -> solved count */
-    public function getSolvedQuestCounts(int $user_id): array
+    /** Returns associative array of quest_type -> solved count. */
+    public function getSolvedQuestCounts(int $user_id, int $last_x_days = -1): array
     {
+        $last_x_days_condition = '';
+        if ($last_x_days > 0) {
+            $last_x_days_condition = 'AND created_at > DATE_SUB(CURDATE(), INTERVAL '.$last_x_days.' DAY)';
+        }
         $stmt = $this->mysqli->prepare(
             'SELECT quest_type, SUM(solved_quest_count)
               FROM changesets
-              WHERE user_id = ?
+              WHERE user_id = ? '.$last_x_days_condition.'
               GROUP BY quest_type'
         );
         $stmt->bind_param('i', $user_id);
@@ -101,12 +105,16 @@ class ChangesetsDao
     }
 
     /** Returns associative array of country iso code -> solved count */
-    public function getSolvedQuestsByCountry(int $user_id): array
+    public function getSolvedQuestsByCountry(int $user_id, int $last_x_days = -1): array
     {
+        $last_x_days_condition = '';
+        if ($last_x_days > 0) {
+            $last_x_days_condition = 'AND created_at > DATE_SUB(CURDATE(), INTERVAL '.$last_x_days.' DAY)';
+        }
         $stmt = $this->mysqli->prepare(
             'SELECT SUBSTRING_INDEX(country_code, "-", 1), SUM(solved_quest_count)
               FROM changesets
-              WHERE user_id = ?
+              WHERE user_id = ? '.$last_x_days_condition.'
               GROUP BY SUBSTRING_INDEX(country_code, "-", 1)'
         );
         $stmt->bind_param('i', $user_id);
