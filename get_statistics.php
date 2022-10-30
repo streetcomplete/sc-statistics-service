@@ -39,7 +39,7 @@ try {
     $current_week_solved_quest_types = $changesets_dao->getSolvedQuestCounts($user_id, 7);
     $current_week_solved_by_country = $changesets_dao->getSolvedQuestsByCountry($user_id, 7);
     $days_active = $changesets_dao->getDaysActive($user_id);
-    $active_dates_range = 90;
+    $active_dates_range = 100;
     $active_dates = $changesets_dao->getActiveDates($user_id, $active_dates_range);
 
     $user_ranks_dao = new UserRanksDao($mysqli);
