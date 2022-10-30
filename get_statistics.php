@@ -39,6 +39,8 @@ try {
     $current_week_solved_quest_types = $changesets_dao->getSolvedQuestCounts($user_id, 7);
     $current_week_solved_by_country = $changesets_dao->getSolvedQuestsByCountry($user_id, 7);
     $days_active = $changesets_dao->getDaysActive($user_id);
+    $active_dates_range = 90;
+    $active_dates = $changesets_dao->getActiveDates($user_id, $active_dates_range);
 
     $user_ranks_dao = new UserRanksDao($mysqli);
     $rank = $user_ranks_dao->getRank($user_id);
@@ -70,7 +72,9 @@ exit(json_encode(array(
     'currentWeekRank' => $current_week_rank ? $current_week_rank : -1,
     'currentWeekCountryRanks' => empty($current_week_country_ranks) ? new stdClass() : $current_week_country_ranks,
     'currentWeekQuestTypes' => empty($current_week_solved_quest_types) ? new stdClass() : $current_week_solved_quest_types,
-    'currentWeekCountries' => empty($current_week_solved_by_country) ? new stdClass() : $current_week_solved_by_country
+    'currentWeekCountries' => empty($current_week_solved_by_country) ? new stdClass() : $current_week_solved_by_country,
+    'activeDatesRange' => $active_dates_range,
+    'activeDates' => empty($active_dates) ? array() : $active_dates
 )));
 
 function returnError($code, $message)
