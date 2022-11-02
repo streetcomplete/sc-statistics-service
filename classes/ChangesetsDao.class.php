@@ -143,4 +143,23 @@ class ChangesetsDao
         $stmt->close();
         return $r;
     }
+
+    /** Returns the dates at which the user created changesets */
+    public function getActiveDates(int $user_id, int $last_x_days): array
+    {
+        $stmt = $this->mysqli->prepare(
+            'SELECT DISTINCT DATE(created_at)
+              FROM changesets
+              WHERE user_id = ? AND created_at >= DATE_SUB(CURDATE(), INTERVAL '.$last_x_days.' DAY)'
+        );
+        $stmt->bind_param('i', $user_id);
+        $stmt->execute();
+        $result = $stmt->get_result();
+        $r = array();
+        while ($row = $result->fetch_row()) {
+            array_push($r, $row[0]);
+        }
+        $stmt->close();
+        return $r;
+    }
 }
