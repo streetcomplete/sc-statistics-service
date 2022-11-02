@@ -31,7 +31,7 @@ class ChangesetsParser {
         $r->max_lat = doubleval((string) $changeset->attributes()['max_lat']);
         $r->min_lat = doubleval((string) $changeset->attributes()['min_lat']);
         $r->max_lon = doubleval((string) $changeset->attributes()['max_lon']);
-        $r->min_lon = doubleval((string) $changeset->attributes()['max_lon']);
+        $r->min_lon = doubleval((string) $changeset->attributes()['min_lon']);
         $r->open = filter_var((string) $changeset->attributes()['open'], FILTER_VALIDATE_BOOLEAN);
         foreach ($changeset->tag as $tag)
         {
