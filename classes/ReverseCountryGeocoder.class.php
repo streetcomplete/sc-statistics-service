@@ -6,7 +6,7 @@
   * itself if it doesn't exist yet from a GEOJSON. The GEOJSON used was generated from 
   * this file https://josm.openstreetmap.de/export/HEAD/josm/trunk/data/boundaries.osm
   * via https://github.com/westnordost/countryboundaries
-  * So this means, there are subdivisions available for US, CA, AU, CH and IN */
+  * So this means, there are subdivisions available for US, CA, AU, CH and IN etc */
 class ReverseCountryGeocoder
 {
     private $mysqli;
@@ -35,10 +35,7 @@ class ReverseCountryGeocoder
         }
         $r = array();
         while ($row = $result->fetch_row()) {
-            $iso = $row[0];
-            // skip non-countries
-            if ($iso == "EU" || $iso == "FX") continue;
-            $r[] = $iso;
+            $r[] = $row[0];
         }
         $stmt->close();
         // sort by length of iso code descending (i.e. US-TX, US)
