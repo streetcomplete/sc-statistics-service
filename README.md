@@ -2,9 +2,7 @@
 
 Statistics generation service for [StreetComplete](https://github.com/streetcomplete/StreetComplete). It is powering profile view in the app where various statistics are displayed.
  
-Tested with PHP 7.3 and MariaDB 10.2.
-
-Versions earlier than PHP 7.3 will not work.
+Works with PHP 7.3+ and MariaDB 10.2.4+.
 
 ## Deployment
 

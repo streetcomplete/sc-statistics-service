@@ -57,10 +57,9 @@ class ReverseCountryGeocoder
         $this->mysqli->begin_transaction();
         foreach($features as $feature) {
             $id = $feature["properties"]["id"];
-            $geom = geometryToWkt($feature["geometry"]);
-            // the function ST_GeomFromGeoJSON is not available in older MySQL versions
+            $geom = $feature["geometry"];
             $stmt = $this->mysqli->prepare(
-              'INSERT INTO boundaries (id, shape) VALUES (?, ST_GeomFromText(?, 3857))'
+              'INSERT INTO boundaries (id, shape) VALUES (?, ST_GeomFromGeoJSON(?))'
             );
             $stmt->bind_param('ss', $id, $geom);
             $stmt->execute();
@@ -83,32 +82,4 @@ class ReverseCountryGeocoder
         $stmt->close();
         return $row ? true : false;
     }
-}
-
-function geometryToWkt(array $geojson_geometry): string {
-    $coords = $geojson_geometry['coordinates'];
-    $type = $geojson_geometry['type'];
-    if ($type == "Polygon") {
-        return 'POLYGON ' . polygonToWkt($coords);
-    } else if ($type == "MultiPolygon") {
-        return 'MULTIPOLYGON ' . multiPolygonToWkt($coords);
-    } else {
-        throw new Exception('Unexpected geometry type "'.$type.'" in boundaries file.');
-    }
-}
-
-function coordToWkt(array $coord): string {
-    return implode(' ', $coord);
-}
-
-function linestringToWkt(array $linestring): string {
-    return '(' . implode(', ', array_map('coordToWkt', $linestring)) . ')';
-}
-
-function polygonToWkt(array $polygon): string {
-    return '(' . implode(', ', array_map('linestringToWkt', $polygon)) . ')';
-}
-
-function multiPolygonToWkt(array $multi_polygon): string {
-    return '(' . implode(', ', array_map('polygonToWkt', $multi_polygon)) . ')';
 }
