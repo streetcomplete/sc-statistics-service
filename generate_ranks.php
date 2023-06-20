@@ -24,7 +24,7 @@ CREATE TABLE IF NOT EXISTS ".$table."(
   user_id BIGINT UNSIGNED,
   country_code VARCHAR(6) DEFAULT '',
   rank INT,
-  solved_quest_count INT,
+  changes_count INT,
   CONSTRAINT user_pkey PRIMARY KEY (user_id, country_code)
 );
 
@@ -32,21 +32,21 @@ START TRANSACTION;
 
 DELETE FROM ".$table.";
 
-INSERT INTO ".$table." (user_id, country_code, solved_quest_count)
-  SELECT user_id, SUBSTRING_INDEX(country_code, '-', 1), SUM(solved_quest_count)
+INSERT INTO ".$table." (user_id, country_code, changes_count)
+  SELECT user_id, SUBSTRING_INDEX(country_code, '-', 1), SUM(changes_count)
   FROM changesets 
   ".$last_x_days_condition."
   GROUP BY user_id, SUBSTRING_INDEX(country_code, '-', 1);
 
-REPLACE INTO ".$table." (user_id, country_code, solved_quest_count)
-  SELECT user_id, NULL, SUM(solved_quest_count)
+REPLACE INTO ".$table." (user_id, country_code, changes_count)
+  SELECT user_id, NULL, SUM(changes_count)
   FROM ".$table."
   GROUP BY user_id;
 
-REPLACE INTO ".$table." (user_id, country_code, solved_quest_count, rank)
+REPLACE INTO ".$table." (user_id, country_code, changes_count, rank)
   SELECT 
-    user_id, country_code, solved_quest_count,
-    DENSE_RANK() OVER (PARTITION BY country_code ORDER BY solved_quest_count DESC)
+    user_id, country_code, changes_count,
+    DENSE_RANK() OVER (PARTITION BY country_code ORDER BY changes_count DESC)
   FROM ".$table.";
 
 COMMIT;

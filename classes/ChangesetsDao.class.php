@@ -21,7 +21,7 @@ class ChangesetsDao
                 changeset_id BIGINT UNSIGNED PRIMARY KEY,
                 user_id BIGINT UNSIGNED NOT NULL,
                 quest_type VARCHAR(256) NOT NULL,
-                solved_quest_count INT UNSIGNED NOT NULL,
+                changes_count INT UNSIGNED NOT NULL,
                 created_at DATETIME NOT NULL,
                 closed_at DATETIME,
                 country_code VARCHAR(6),
@@ -43,18 +43,17 @@ class ChangesetsDao
     private function putChangeset(Changeset $changeset)
     {
         $stmt = $this->mysqli->prepare(
-            'REPLACE INTO changesets(changeset_id, user_id, quest_type, solved_quest_count, created_at, closed_at, country_code, open)
+            'REPLACE INTO changesets(changeset_id, user_id, quest_type, changes_count, created_at, closed_at, country_code, open)
              VALUES (?,?,?,?,?,?,?,?)'
         );
         $created_at = date('Y-m-d H:i:s', $changeset->created_at);
         $closed_at = $changeset->closed_at ? date('Y-m-d H:i:s', $changeset->closed_at) : null;
         
-        $solved_quest_count = $changeset->solved_quest_count ?? $changeset->changes_count;
         $stmt->bind_param('iisisssi', 
             $changeset->id,
             $changeset->user_id,
             $changeset->quest_type,
-            $solved_quest_count,
+            $changeset->changes_count,
             $created_at,
             $closed_at,
             $changeset->country_code,
@@ -88,7 +87,7 @@ class ChangesetsDao
             $last_x_days_condition = 'AND created_at > DATE_SUB(CURDATE(), INTERVAL '.$last_x_days.' DAY)';
         }
         $stmt = $this->mysqli->prepare(
-            'SELECT quest_type, SUM(solved_quest_count)
+            'SELECT quest_type, SUM(changes_count)
               FROM changesets
               WHERE user_id = ? '.$last_x_days_condition.'
               GROUP BY quest_type'
@@ -112,7 +111,7 @@ class ChangesetsDao
             $last_x_days_condition = 'AND created_at > DATE_SUB(CURDATE(), INTERVAL '.$last_x_days.' DAY)';
         }
         $stmt = $this->mysqli->prepare(
-            'SELECT SUBSTRING_INDEX(country_code, "-", 1), SUM(solved_quest_count)
+            'SELECT SUBSTRING_INDEX(country_code, "-", 1), SUM(changes_count)
               FROM changesets
               WHERE user_id = ? '.$last_x_days_condition.'
               GROUP BY SUBSTRING_INDEX(country_code, "-", 1)'

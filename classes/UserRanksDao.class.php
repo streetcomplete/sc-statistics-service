@@ -19,7 +19,7 @@ class UserRanksDao
               user_id BIGINT UNSIGNED,
               country_code VARCHAR(6) DEFAULT "",
               rank INT,
-              solved_quest_count INT,
+              changes_count INT,
               CONSTRAINT user_pkey PRIMARY KEY (user_id, country_code)
             );'
         );
