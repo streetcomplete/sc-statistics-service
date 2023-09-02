@@ -21,6 +21,7 @@ mysqli_report(MYSQLI_REPORT_ERROR | MYSQLI_REPORT_STRICT);
 
 // step 1: create temporary table to load deleted users data into
 $mysqli = new mysqli(Config::DB_HOST, Config::DB_USER, Config::DB_PASS, Config::DB_NAME);
+$mysqli->query('SET SESSION time_zone="+0:00"');
 $mysqli->query(
     'CREATE TABLE IF NOT EXISTS deleted_user_ids (
       user_id BIGINT UNSIGNED PRIMARY KEY
