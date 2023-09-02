@@ -13,6 +13,7 @@ require_once 'config.php';
 mysqli_report(MYSQLI_REPORT_ERROR | MYSQLI_REPORT_STRICT);
 
 $mysqli = new mysqli(Config::DB_HOST, Config::DB_USER, Config::DB_PASS, Config::DB_NAME);
+$mysqli->query('SET SESSION time_zone="+0:00"');
 
 function createGenerateRanksStatements(string $table, int $last_x_days = -1) {
     $last_x_days_condition = '';

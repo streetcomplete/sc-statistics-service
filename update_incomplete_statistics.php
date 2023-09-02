@@ -19,6 +19,7 @@ mysqli_report(MYSQLI_REPORT_ERROR | MYSQLI_REPORT_STRICT);
 date_default_timezone_set('UTC');
 
 $mysqli = new mysqli(Config::DB_HOST, Config::DB_USER, Config::DB_PASS, Config::DB_NAME);
+$mysqli->query('SET SESSION time_zone="+0:00"');
 $changesets_walker = new ChangesetsWalker($mysqli, Config::DB_NAME, Config::OSM_API_USER, Config::OSM_API_PASS);
 // will only finish analyzations that have been untouched for 30 seconds or more
 $changesets_walker->analyzeUnfinished(time() - 30, Config::MAX_CRON_CHANGESET_ANALYZING_IN_SECONDS);
