@@ -9,14 +9,12 @@ class ChangesetsFetcher
 {
     const OSM_CHANGESETS_API = 'https://api.openstreetmap.org/api/0.6/changesets';
     
-    private $user;
-    private $pass;
+    private $osm_auth_token;
     private $parser;
 
-    public function __construct(string $user = null, string $pass = null)
+    public function __construct(string $osm_auth_token = null)
     {
-        $this->user = $user;
-        $this->pass = $pass;
+        $this->osm_auth_token = $osm_auth_token;
         $this->parser = new ChangesetsParser();
     }
     
@@ -28,7 +26,7 @@ class ChangesetsFetcher
             $time = date('c', $closed_after) . ',' . date('c', $created_before);
         }
         $url = self::OSM_CHANGESETS_API . '?user=' . $user_id . '&time=' . $time;
-        $response = $this->fetchUrl($url, $this->user, $this->pass);
+        $response = $this->fetchUrl($url, $this->osm_auth_token);
         if ($response->code == 404) {
             return null;
         }
@@ -41,7 +39,7 @@ class ChangesetsFetcher
     public function fetchByIds(array $changeset_ids): ?array
     {
         $url = self::OSM_CHANGESETS_API . '?changesets=' . implode(",", $changeset_ids);
-        $response = $this->fetchUrl($url, $this->user, $this->pass);
+        $response = $this->fetchUrl($url, $this->osm_auth_token);
         if ($response->code == 404) {
             return null;
         }
@@ -51,14 +49,14 @@ class ChangesetsFetcher
         return $this->parser->parse($response->body);
     }
 
-    private function fetchUrl(string $url, string $user = null, string $pass = null)
+    private function fetchUrl(string $url, string $auth_token = null)
     {
         $response = new stdClass();
         $curl = curl_init($url);
         curl_setopt($curl, CURLOPT_RETURNTRANSFER, true);
         curl_setopt($curl, CURLOPT_USERAGENT, 'StreetComplete Statistics Analyzer'); 
-        if ($user !== null and $pass !== null) {
-            curl_setopt($curl, CURLOPT_USERPWD, $user . ":" . $pass);
+        if ($auth_token !== null) {
+            curl_setopt($curl, CURLOPT_HTTPHEADER, array("Authorization: Bearer ".$auth_token));
         }
         $response->body = curl_exec($curl);
         $response->code = curl_getinfo($curl, CURLINFO_RESPONSE_CODE);

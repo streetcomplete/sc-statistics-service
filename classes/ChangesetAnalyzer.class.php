@@ -9,7 +9,7 @@ class ChangesetAnalyzer {
 
     private $geocoder;
     
-    public function __construct(mysqli $mysqli, string $db_name, string $osm_user = null, string $osm_pass = null)
+    public function __construct(mysqli $mysqli, string $db_name, string $osm_auth_token = null)
     {
         $this->geocoder = new ReverseCountryGeocoder($mysqli, $db_name, 'data'.DIRECTORY_SEPARATOR.'boundaries.json');
     }

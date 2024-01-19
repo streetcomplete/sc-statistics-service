@@ -6,8 +6,7 @@ class Config
     const DB_USER = "statistics_user";
     const DB_PASS = "statistics_pw";
 
-    const OSM_API_USER = null;
-    const OSM_API_PASS = null;
+    const OSM_OAUTH_TOKEN = null;
 
     /* time the backend should scan through the users' changeset history via the OSM API until
      * cancelling it and just returning what it got so far when a user queries his statistics.

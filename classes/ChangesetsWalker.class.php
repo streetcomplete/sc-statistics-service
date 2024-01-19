@@ -28,12 +28,12 @@ class ChangesetsWalker
     private $changesetsWalkerStateDao;
     private $changesetAnalyzer;
     
-    public function __construct(mysqli $mysqli, string $db_name, string $osm_user = null, string $osm_pass = null)
+    public function __construct(mysqli $mysqli, string $db_name, string $osm_auth_token = null)
     {
-        $this->changesetsFetcher = new ChangesetsFetcher($osm_user, $osm_pass);
+        $this->changesetsFetcher = new ChangesetsFetcher($osm_auth_token);
         $this->changesetsDao = new ChangesetsDao($mysqli);
         $this->changesetsWalkerStateDao = new ChangesetsWalkerStateDao($mysqli);
-        $this->changesetAnalyzer = new ChangesetAnalyzer($mysqli, $db_name, $osm_user, $osm_pass);
+        $this->changesetAnalyzer = new ChangesetAnalyzer($mysqli, $db_name, $osm_auth_token);
     }
     
     public function analyzeUser(int $user_id, int $timeout_in_seconds = null)

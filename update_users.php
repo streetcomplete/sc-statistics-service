@@ -24,7 +24,7 @@ $user_ids = explode(",", $user_ids_str);
 
 $mysqli = new mysqli(Config::DB_HOST, Config::DB_USER, Config::DB_PASS, Config::DB_NAME);
 $mysqli->query('SET SESSION time_zone="+0:00"');
-$changesets_walker = new ChangesetsWalker($mysqli, Config::DB_NAME, Config::OSM_API_USER, Config::OSM_API_PASS);
+$changesets_walker = new ChangesetsWalker($mysqli, Config::DB_NAME, Config::OSM_OAUTH_TOKEN);
 echo 'analyzing...' . PHP_EOL;
 foreach ($user_ids as $user_id) {
     echo $user_id . PHP_EOL;

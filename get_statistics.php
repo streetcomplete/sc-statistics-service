@@ -28,7 +28,7 @@ try {
 
     $mysqli = new mysqli(Config::DB_HOST, Config::DB_USER, Config::DB_PASS, Config::DB_NAME);
     $mysqli->query('SET SESSION time_zone="+0:00"');
-    $changesets_walker = new ChangesetsWalker($mysqli, Config::DB_NAME, Config::OSM_API_USER, Config::OSM_API_PASS);
+    $changesets_walker = new ChangesetsWalker($mysqli, Config::DB_NAME, Config::OSM_OAUTH_TOKEN);
     $last_update_date = $changesets_walker->getLastUpdateDate($user_id);
     if (time() >= $last_update_date + Config::MIN_DELAY_BETWEEN_CHANGESET_ANALYZING_IN_SECONDS) {
         $changesets_walker->analyzeUser($user_id, Config::MAX_CHANGESET_ANALYZING_IN_SECONDS);
