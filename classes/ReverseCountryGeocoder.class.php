@@ -54,14 +54,19 @@ class ReverseCountryGeocoder
         $features = $geojson["features"];
         $this->mysqli->begin_transaction();
         foreach($features as $feature) {
-            $id = $feature["properties"]["id"];
-            $geom = json_encode($feature["geometry"]);
-            $stmt = $this->mysqli->prepare(
-              'INSERT INTO boundaries (id, shape, area) VALUES (?, ST_GeomFromGeoJSON(?), ST_AREA(ST_GeomFromGeoJSON(?)))'
-            );
-            $stmt->bind_param('sss', $id, $geom, $geom);
-            $stmt->execute();
-            $stmt->close();
+            try {
+                $id = $feature["properties"]["id"];
+                $coords = $feature["geometry"]["coordinates"];
+                $geom = json_encode($feature["geometry"]);
+                $stmt = $this->mysqli->prepare(
+                  'INSERT INTO boundaries (id, shape, area) VALUES (?, ST_GeomFromGeoJSON(?), ST_AREA(ST_GeomFromGeoJSON(?)))'
+                );
+                $stmt->bind_param('sss', $id, $geom, $geom);
+                $stmt->execute();
+                $stmt->close();
+            } catch (Exception $e) {
+                  trigger_error("WARNING: skipping country $id due to error: " . $e->getMessage(), E_USER_WARNING);
+            }
         }
         $this->mysqli->commit();
     }
