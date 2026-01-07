@@ -56,7 +56,6 @@ class ReverseCountryGeocoder
         foreach($features as $feature) {
             try {
                 $id = $feature["properties"]["id"];
-                $coords = $feature["geometry"]["coordinates"];
                 $geom = json_encode($feature["geometry"]);
                 $stmt = $this->mysqli->prepare(
                   'INSERT INTO boundaries (id, shape, area) VALUES (?, ST_GeomFromGeoJSON(?), ST_AREA(ST_GeomFromGeoJSON(?)))'
