@@ -18,7 +18,7 @@ class ChangesetsDao
     {
         $this->mysqli->query(
             'CREATE TABLE IF NOT EXISTS changesets(
-                changeset_id BIGINT UNSIGNED PRIMARY KEY,
+                changeset_id BIGINT UNSIGNED NOT NULL,
                 user_id BIGINT UNSIGNED NOT NULL,
                 quest_type VARCHAR(256) NOT NULL,
                 changes_count INT UNSIGNED NOT NULL,
@@ -26,8 +26,11 @@ class ChangesetsDao
                 closed_at DATETIME,
                 country_code VARCHAR(6),
                 open BOOLEAN NOT NULL,
+                PRIMARY KEY (user_id, changeset_id),
                 KEY (user_id)
-            )'
+            )
+            PARTITION BY KEY (user_id)
+            PARTITIONS 1000'
         );
     }
 
